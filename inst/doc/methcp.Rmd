@@ -1,0 +1,80 @@
+---
+title: "methcp: User’s Guide"
+author: "Boying Gong"
+date: "`r Sys.Date()`"
+output: 
+      html_document:
+        toc: true
+        toc_float: true
+        number_sections: true
+        toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+```{r, include=FALSE}
+# source("https://bioconductor.org/biocLite.R")
+# biocLite("bsseq")
+# biocLite("DSS")
+# biocLite("methylKit")
+# biocLite("DNAcopy")
+
+library(bsseq)
+library(DSS)
+library(parallel)
+library(methylKit)
+library(DNAcopy)
+```
+
+# Reading data
+
+```{r readData}
+sample_names <- c(paste0("control", 1:3),
+                  paste0("treatment", 1:3))
+n_sample <- length(sample_names)
+raw_files <- paste0("inst/extdata/", sample_names, ".txt")
+
+bs_object_list <- list()
+for (i in 1:n_sample){
+  dt <- read.table(raw_files[i], stringsAsFactors = FALSE, header = TRUE)
+  bs_object_list[[i]] <- BSseq(chr = dt$Chr,
+                               pos = dt$Pos,
+                               M = as.matrix(dt$M),
+                               Cov = as.matrix(dt$Cov),
+                               sampleNames = sample_names[i])
+}
+
+bs_object <- do.call("combine", c(bs_object_list))
+```
+
+# Calculate the statistics
+
+```{r calcStat}
+group1 <- paste0("control", 1:3)
+group2 <- paste0("treatment", 1:3)
+
+obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS")
+obj_methylKit <- calcLociStat(bs_object, group1, group2, test = "methylKit")
+```
+
+# Segmentation
+
+```{r}
+obj_DSS <- segmentMethCP(obj_DSS, bs_object, region.test = "weighted-coverage")
+obj_methylKit <- segmentMethCP(obj_methylKit, bs_object, region.test = "fisher")
+```
+
+# Significant regions
+
+```{r}
+region_DSS <- getSigRegion(obj_DSS)
+region_methylKit <- getSigRegion(obj_methylKit)
+```
+
+# Session info
+
+```{r}
+sessionInfo() 
+```

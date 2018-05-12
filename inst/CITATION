@@ -1,0 +1,20 @@
+## 
+## To cite R in publications use:
+## 
+##   MethCP: Differentially Methylated Region Detection with Change 
+##   Point Models. Boying Gong and Elizabeth Purdom.
+## 
+## A BibTeX entry for LaTeX users is
+## 
+##   @Manual{,
+##     title = {MethCP: Differentially Methylated Region Detection 
+##     with Change Point Models},
+##     author = {Boying Gong and Elizabeth Purdom},
+##     organization = {University of California, Berkeley},
+##     address = {Berkeley, CA, USA},
+##     year = {2018}
+##   }
+## 
+## We have invested a lot of time and effort in creating R, please
+## cite it when using it for data analysis. See also
+## 'citation("pkgname")' for citing R packages.
