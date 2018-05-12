@@ -34,6 +34,7 @@
 #' }
 #'
 #'
+#' @export
 calcLociStat <- function(bs.object, group1, group2,
                          test = c("DSS", "methylKit"), mc.cores = 1){
 
@@ -51,7 +52,7 @@ calcLociStat <- function(bs.object, group1, group2,
     object_list[[chr]] <- bs.object[seqnames(bs.object) == chr]
   }
   if(test == "DSS"){
-    stat <- GRangesList(mclapply(object_list, function(o){
+    stat <- GenomicRanges::GRangesList(mclapply(object_list, function(o){
       invisible(capture.output(tmp <- DMLtest(o,
                      group1,
                      group2,
@@ -66,7 +67,7 @@ calcLociStat <- function(bs.object, group1, group2,
     }, mc.cores = mc.cores))
   } else if(test == "methylKit"){
     nsample <- length(group1) + length(group2)
-    stat <- GRangesList(mclapply(object_list, function(o){
+    stat <- GenomicRanges::GRangesList(mclapply(object_list, function(o){
       df <- cbind(
         as.data.frame(granges(o)),
         getCoverage(o, type = "Cov")[, c(group1, group2)],

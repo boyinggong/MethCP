@@ -21,11 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 # biocLite("methylKit")
 # biocLite("DNAcopy")
 
-library(bsseq)
-library(DSS)
-library(parallel)
-library(methylKit)
-library(DNAcopy)
+library(methcp)
 ```
 
 # Reading data
@@ -70,8 +66,14 @@ obj_methylKit <- segmentMethCP(obj_methylKit, bs_object, region.test = "fisher")
 
 ```{r}
 region_DSS <- getSigRegion(obj_DSS)
-region_methylKit <- getSigRegion(obj_methylKit)
+head(region_DSS)
 ```
+
+```{r}
+region_methylKit <- getSigRegion(obj_methylKit)
+head(region_methylKit)
+```
+
 
 # Session info
 

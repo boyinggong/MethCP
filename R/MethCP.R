@@ -1,7 +1,7 @@
 
 setClassUnion("characterORnumeric", c("character", "numeric"))
 
-
+#' @export
 setClass("MethCP", representation(test = "character",
                                   stat = "GRangesList",
                                   group1 = "characterORnumeric",
@@ -10,10 +10,10 @@ setClass("MethCP", representation(test = "character",
          prototype(test = NA_character_,
                    group1 = NA,
                    group2 = NA,
-                   stat = GRangesList(list()),
-                   segmentation = GRanges()))
+                   stat = GenomicRanges::GRangesList(list()),
+                   segmentation = GenomicRanges::GRanges()))
 
-
+#' @export
 setMethod("show", signature("MethCP"), function(object){
   cat(paste0("MethCP object with ", length(object@stat), " chromosomes, ",
              sum(sapply(object@stat, length)),
@@ -28,7 +28,7 @@ setMethod("show", signature("MethCP"), function(object){
   }
 })
 
-
+#' @export
 setGeneric("segmentMethCP",
            function(methcp.object, bs.object,
                     region.test = c("fisher", "stouffer",
@@ -51,13 +51,13 @@ setMethod(
       stop("ERROR: can not apply weighted effect size method with methylKit.")
     }
     if (length(object@segmentation) != 0){
-      cat("Object has been segmented. Remove previous segmentation? (y/n) > ")
-      a = readLines(file("stdin"), 1)
+      a <- readline("Object has been segmented. Remove previous segmentation? (y/n) > ")
       if (a == "y") {
-        cat("Removed. Start running new segmentation ...")
+        message("Removed. Start running new segmentation ...")
         object@segmentation <- GRanges()
       } else {
-        stop("Stopped.")
+        message("Stopped.")
+        return(methcp.object)
       }
     }
     if (object@test == "methylKit") {
@@ -95,53 +95,61 @@ setMethod(
 
     # calculate region summary
     ovrlp <- findOverlaps(granges(bs.object), segments)
-    segments$nC <- table(ovrlp@to)
-    M1 <- by(getCoverage(bs.object, type = "M")[ovrlp@from, object@group1], ovrlp@to, sum)
-    M2 <- by(getCoverage(bs.object, type = "M")[ovrlp@from, object@group2], ovrlp@to, sum)
-    Cov1 <- by(getCoverage(bs.object)[ovrlp@from, object@group1], ovrlp@to, sum)
-    Cov2 <- by(getCoverage(bs.object)[ovrlp@from, object@group2], ovrlp@to, sum)
+    segments$nC <- as.numeric(table(ovrlp@to))
+    M1 <- as.numeric(by(getCoverage(bs.object, type = "M")[
+      ovrlp@from, object@group1], ovrlp@to, sum))
+    M2 <- as.numeric(by(getCoverage(bs.object, type = "M")[
+      ovrlp@from, object@group2], ovrlp@to, sum))
+    Cov1 <- as.numeric(by(getCoverage(bs.object)[
+      ovrlp@from, object@group1], ovrlp@to, sum))
+    Cov2 <- as.numeric(by(getCoverage(bs.object)[
+      ovrlp@from, object@group2], ovrlp@to, sum))
     segments$mean.diff <- M1/Cov1 - M2/Cov2
     segments$mean.cov <- (Cov1 + Cov2)/length(c(object@group1, object@group2))/segments$nC.valid
 
     # calculate region statistics
     ovrlp <- findOverlaps(unlist(object@stat), segments)
     if (region.test == "fisher"){
-      segments$regionPval <- tapply(
+      segments$region.pval <- tapply(
         unlist(object@stat)$pval, ovrlp@to, .calcFisherPval)
     } else if (region.test == "stouffer"){
-      # segments$regionPval <- by(
+      # segments$region.pval <- as.numeric(by(
       #   unlist(object@stat)[, c("mu", "pval")], ovrlp@to,
-      #   function(x) .calcStoufferPval(x$pval, x$mu))
-      segments$regionPval <- tapply(
+      #   function(x) .calcStoufferPval(x$pval, x$mu)))
+      segments$region.pval <- tapply(
         unlist(object@stat)$pval, ovrlp@to, .calcStoufferPvalOneSided)
     } else if (region.test == "weighted-variance"){
-      segments$regionPval <- by(
+      segments$region.pval <- as.numeric(by(
         unlist(object@stat)@elementMetadata, ovrlp@to,
-        function(x) .calcWeightedPval(x$mu, x$se, 1/x$se))
+        function(x) .calcWeightedPval(x$mu, x$se, 1/x$se)))
     } else if (region.test == "weighted-coverage"){
-      segments$region.pval <- by(
+      segments$region.pval <- as.numeric(by(
         unlist(object@stat)@elementMetadata, ovrlp@to,
-        function(x) .calcWeightedPval(x$mu, x$se, x$CovGroup1 + x$CovGroup2))
+        function(x) .calcWeightedPval(x$mu, x$se, x$CovGroup1 + x$CovGroup2)))
     }
     methcp.object@segmentation <- segments
     return(methcp.object)
   }
 )
 
-
+#' @export
 setGeneric("getSigRegion",
-           function(object, sig.level = 0.01, mean.coverage = 1, mean.diff = 0.1)
+           function(object, sig.level = 0.01, mean.coverage = 1,
+                    mean.diff = 0.1, nC.valid = 10)
              standardGeneric("getSigRegion"))
 setMethod(
   "getSigRegion", "MethCP",
-  function(object, sig.level = 0.01, mean.coverage = 1, mean.diff = 0.1){
+  function(object, sig.level = 0.01, mean.coverage = 1,
+           mean.diff = 0.1, nC.valid = 10){
 
     if (!is(object, "MethCP")){
       stop("ERROR: Input must be an object of class \"MethCP\".")
     }
-    res <- data.frame(object@segmentation)
+    res <- as.data.frame(object@segmentation)
+    res$strand <- NULL
+    res$width <- NULL
     res <- res[res$region.pval <= sig.level & res$mean.cov >= mean.coverage &
-                 abs(res$mean.diff) >= mean.diff, ]
+                 abs(res$mean.diff) >= mean.diff & res$nC.valid >= nC.valid, ]
     res$mean.diff <- round(res$mean.diff, 4)
     res$mean.cov <- round(res$mean.cov, 4)
     return(res)
