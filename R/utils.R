@@ -44,3 +44,6 @@
   stat <- .calcWeightedStat(effect.size, se, weights)
   return((1-pnorm(abs(stat)))*2)
 }
+
+.asinTransform <- function(p) { asin(sqrt(p)) }
+

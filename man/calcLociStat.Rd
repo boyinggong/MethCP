@@ -2,47 +2,81 @@
 % Please edit documentation in R/calcLociStat.R
 \name{calcLociStat}
 \alias{calcLociStat}
-\title{Sum of vector elements.}
+\title{Calculate the per-cytosine statistics for simple two-group
+comparisons.}
 \usage{
 calcLociStat(bs.object, group1, group2, test = c("DSS", "methylKit"),
   mc.cores = 1)
 }
 \arguments{
-\item{...}{Numeric, complex, or logical vectors.}
+\item{bs.object}{a \code{BSseq} object from the \code{bsseq} package.}
 
-\item{na.rm}{A logical scalar. Should missing values (including NaN)
-be removed?}
+\item{group1}{a character vector containing the sample names of the
+treatment group.}
+
+\item{group2}{a character vector containing the sample names of the
+control group.}
+
+\item{test}{a character string containing the names of the test to be
+performed per cytosine.}
+
+\item{mc.cores}{number of cores used for the parallelization.}
 }
 \value{
-If all inputs are integer and logical, then the output
-  will be an integer. If integer overflow
-  \url{http://en.wikipedia.org/wiki/Integer_overflow} occurs, the output
-  will be NA with a warning. Otherwise it will be a length-one numeric or
-  complex vector.
-
-  Zero-length vectors have sum 0 by definition. See
-  \url{http://en.wikipedia.org/wiki/Empty_sum} for more details.
+a \code{MethCP} object that is not segmented.
 }
 \description{
-\code{sum} returns the sum of all the values present in its arguments.
+\code{calcLociStat} calculates per-cytosine based statistics
+between two population groups.
 }
 \details{
-This is a generic function: methods can be defined for it directly
-or via the \code{\link{Summary}} group generic. For this to work properly,
-the arguments \code{...} should be unnamed, and dispatch is on the
-first argument.
+For each cytosine, \code{calcLociStat} calculates a statistics
+using either package \code{DSS} or \code{methylKit} to test the
+differences between two groups, and returns a \code{MethCP} object.
+For customized per-cytosine statistics, please use the function
+\code{methcpFromStat}.
+The input \code{bs.object} is a \code{BSseq} object from the \code{bsseq}
+package which contains the raw data including coverges, methylated
+counts and position infomation for every cytosine in the dataset.
 }
 \examples{
-sum(1:10)
-sum(1:5, 6:10)
-sum(F, F, F, T, T)
+library(bsseq)
+library(GenomicRanges)
+library(IRanges)
 
-sum(.Machine$integer.max, 1L)
-sum(.Machine$integer.max, 1)
+set.seed(0286374)
 
-\dontrun{
-sum("a")
-}
+# Similate a small dataset with 11 cyotsine and 6 samples,
+# 3 in the treatment group and 3 in the control group. The
+# methylation ratio are generated using Binomial distribution
+# with probability 0.3.
+nC <- 2000
+sim_cov <- rnbinom(6*nC, 5, 0.5) + 5
+sim_M <- sapply(sim_cov, function(x) rbinom(1, x, 0.3))
+sim_cov <- matrix(sim_cov, ncol = 6)
+sim_M <- matrix(sim_M, ncol = 6)
+# methylation ratios in the DMRs in the treatment group are
+# generated using Binomial(0.7)
+DMRs <- c(600:622, 1089:1103, 1698:1750)
+sim_M[DMRs, 1:3] <- sapply(sim_cov[DMRs, 1:3], function(x) rbinom(1, x, 0.7))
+# sample names
+sample_names <- c(paste0("treatment", 1:3), paste0("control", 1:3))
+colnames(sim_cov) <- sample_names
+colnames(sim_M) <- sample_names
 
+# create a bs.object
+bs_object <- BSseq(gr = GRanges(seqnames = "Chr01",
+                                IRanges(start = (1:nC)*10,
+                                        width = 1)),
+                   Cov = sim_cov, M = sim_M, sampleNames = sample_names)
+
+methcp_obj1 <- calcLociStat(bs_object,
+                            group1 = paste0("treatment", 1:3),
+                            group2 = paste0("control", 1:3),
+                            test = "DSS")
+methcp_obj2 <- calcLociStat(bs_object,
+                            group1 = paste0("treatment", 1:3),
+                            group2 = paste0("control", 1:3),
+                            test = "methylKit")
 
 }
