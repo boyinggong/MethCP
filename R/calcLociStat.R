@@ -72,6 +72,7 @@
 #' @importFrom DSS DMLtest
 #' @import GenomicRanges
 #' @import parallel
+#' @importFrom utils capture.output
 #'
 #' @export
 calcLociStat <- function(bs.object, group1, group2,

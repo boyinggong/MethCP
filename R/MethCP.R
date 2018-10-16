@@ -75,6 +75,7 @@ setClass("MethCP", representation(test = "character",
 #'
 #' @importFrom IRanges IRanges
 #' @importFrom methods new
+#' @importFrom stats qnorm na.omit
 #'
 #' @export
 setGeneric("MethCP",
@@ -187,11 +188,44 @@ setMethod("show", signature("MethCP"), function(object){
 #' @return a \code{MethCP} object that is not segmented.
 #'
 #' @examples
+#' library(bsseq)
+#' # Simulate a small dataset with 2000 cyotsine and 6 samples,
+#' # 3 in the treatment group and 3 in the control group. The
+#' # methylation ratio are generated using Binomial distribution
+#' # with probability 0.3.
+#' nC <- 2000
+#' sim_cov <- rnbinom(6*nC, 5, 0.5) + 5
+#' sim_M <- sapply(sim_cov, function(x) rbinom(1, x, 0.3))
+#' sim_cov <- matrix(sim_cov, ncol = 6)
+#' sim_M <- matrix(sim_M, ncol = 6)
+#' # methylation ratios in the DMRs in the treatment group are
+#' # generated using Binomial(0.7)
+#' DMRs <- c(600:622, 1089:1103, 1698:1750)
+#' sim_M[DMRs, 1:3] <- sapply(sim_cov[DMRs, 1:3],
+#'                            function(x) rbinom(1, x, 0.7))
+#' # sample names
+#' sample_names <- c(paste0("treatment", 1:3), paste0("control", 1:3))
+#' colnames(sim_cov) <- sample_names
+#' colnames(sim_M) <- sample_names
 #'
-#'
+#' # create a bs.object
+#' bs_object <- BSseq(gr = GRanges(seqnames = "Chr01",
+#'                                 IRanges(start = (1:nC)*10,
+#'                                         width = 1)),
+#'                    Cov = sim_cov, M = sim_M,
+#'                    sampleNames = sample_names)
+#' DMRs_pos <- DMRs*10
+#' methcp_obj1 <- calcLociStat(bs_object,
+#'                             group1 = paste0("treatment", 1:3),
+#'                             group2 = paste0("control", 1:3),
+#'                             test = "DSS")
+#' methcp_obj1 <- segmentMethCP(methcp_obj1, bs_object,
+#'                              region.test = "weighted-coverage",
+#'                              mc.cores = 1)
 #'
 #' @import parallel
 #' @importFrom DNAcopy CNA segment
+#' @importFrom bsseq getCoverage
 #'
 #' @export
 setGeneric("segmentMethCP",
@@ -345,7 +379,40 @@ setMethod(
 #' @return a \code{data.frame} containing the DMRs.
 #'
 #' @examples
+#' library(bsseq)
+#' # Simulate a small dataset with 2000 cyotsine and 6 samples,
+#' # 3 in the treatment group and 3 in the control group. The
+#' # methylation ratio are generated using Binomial distribution
+#' # with probability 0.3.
+#' nC <- 2000
+#' sim_cov <- rnbinom(6*nC, 5, 0.5) + 5
+#' sim_M <- sapply(sim_cov, function(x) rbinom(1, x, 0.3))
+#' sim_cov <- matrix(sim_cov, ncol = 6)
+#' sim_M <- matrix(sim_M, ncol = 6)
+#' # methylation ratios in the DMRs in the treatment group are
+#' # generated using Binomial(0.7)
+#' DMRs <- c(600:622, 1089:1103, 1698:1750)
+#' sim_M[DMRs, 1:3] <- sapply(sim_cov[DMRs, 1:3],
+#'                            function(x) rbinom(1, x, 0.7))
+#' # sample names
+#' sample_names <- c(paste0("treatment", 1:3), paste0("control", 1:3))
+#' colnames(sim_cov) <- sample_names
+#' colnames(sim_M) <- sample_names
 #'
+#' # create a bs.object
+#' bs_object <- BSseq(gr = GRanges(seqnames = "Chr01",
+#'                                 IRanges(start = (1:nC)*10,
+#'                                         width = 1)),
+#'                    Cov = sim_cov, M = sim_M, sampleNames = sample_names)
+#' DMRs_pos <- DMRs*10
+#' methcp_obj1 <- calcLociStat(bs_object,
+#'                             group1 = paste0("treatment", 1:3),
+#'                             group2 = paste0("control", 1:3),
+#'                             test = "DSS")
+#' methcp_obj1 <- segmentMethCP(methcp_obj1, bs_object,
+#'                              region.test = "weighted-coverage",
+#'                              mc.cores = 1)
+#' methcp_res1 <- getSigRegion(methcp_obj1)
 #'
 #' @export
 setGeneric("getSigRegion",
