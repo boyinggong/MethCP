@@ -11,7 +11,7 @@
 
 <meta name="author" content="Boying Gong" />
 
-<meta name="date" content="2018-10-13" />
+<meta name="date" content="2018-10-16" />
 
 <title>methcp: User’s Guide</title>
 
@@ -1472,7 +1472,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">methcp: User’s Guide</h1>
 <h4 class="author"><em>Boying Gong</em></h4>
-<h4 class="date"><em>2018-10-13</em></h4>
+<h4 class="date"><em>2018-10-16</em></h4>
 
 </div>
 
@@ -1507,7 +1507,7 @@ bs_object &lt;- do.call(&quot;combine&quot;, c(bs_object_list))</code></pre>
 <p>The <code>bsseq</code> object.</p>
 <pre class="r"><code>bs_object</code></pre>
 <pre><code>## An object of type 'BSseq' with
-##   188922 methylation loci
+##   82103 methylation loci
 ##   6 samples
 ## has not been smoothed
 ## All assays are in-memory</code></pre>
@@ -1536,13 +1536,13 @@ obj_methylKit &lt;- calcLociStat(bs_object, group1, group2, test = &quot;methylK
 ##  will calculate methylation difference as the difference of
 ## treatment (group: 1) - control (group: 0)</code></pre>
 <pre class="r"><code>obj_DSS</code></pre>
-<pre><code>## MethCP object with 2 chromosomes, 181323 methylation loci
+<pre><code>## MethCP object with 2 chromosomes, 79351 methylation loci
 ## test: DSS
 ## group1: control1 control2 control3
 ## group2: treatment1 treatment2 treatment3
 ## has not been segmented</code></pre>
 <pre class="r"><code>obj_methylKit</code></pre>
-<pre><code>## MethCP object with 2 chromosomes, 182238 methylation loci
+<pre><code>## MethCP object with 2 chromosomes, 81936 methylation loci
 ## test: methylKit
 ## group1: control1 control2 control3
 ## group2: treatment1 treatment2 treatment3
@@ -1566,13 +1566,13 @@ obj_methylKit &lt;- calcLociStat(bs_object, group1, group2, test = &quot;methylK
 <pre class="r"><code>obj_DSS &lt;- segmentMethCP(obj_DSS, bs_object, region.test = &quot;weighted-coverage&quot;, mc.cores = 1)
 obj_methylKit &lt;- segmentMethCP(obj_methylKit, bs_object, region.test = &quot;fisher&quot;, mc.cores = 1)</code></pre>
 <pre class="r"><code>obj_DSS</code></pre>
-<pre><code>## MethCP object with 2 chromosomes, 181323 methylation loci
+<pre><code>## MethCP object with 2 chromosomes, 79351 methylation loci
 ## test: DSS
 ## group1: control1 control2 control3
 ## group2: treatment1 treatment2 treatment3
 ## has been segmented</code></pre>
 <pre class="r"><code>obj_methylKit</code></pre>
-<pre><code>## MethCP object with 2 chromosomes, 182238 methylation loci
+<pre><code>## MethCP object with 2 chromosomes, 81936 methylation loci
 ## test: methylKit
 ## group1: control1 control2 control3
 ## group2: treatment1 treatment2 treatment3
@@ -1584,21 +1584,21 @@ obj_methylKit &lt;- segmentMethCP(obj_methylKit, bs_object, region.test = &quot;
 <pre class="r"><code>region_DSS &lt;- getSigRegion(obj_DSS)
 head(region_DSS)</code></pre>
 <pre><code>##      seqnames  start    end nC.valid nC mean.diff mean.cov  region.pval
-## 1.1      chr1    109    512       11 12    0.3924   3.3636 2.042898e-04
-## 1.4      chr1  26852  27083       11 11   -0.3096   6.6667 5.618375e-08
+## 1.1      chr1    109    512       11 12    0.3924   3.3636 1.602589e-04
+## 1.4      chr1  26852  27083       11 11   -0.3096   6.6667 3.525229e-08
 ## 1.15     chr1  65562  65735       10 10   -0.5742   5.2167 0.000000e+00
-## 2.6      chr1  92672  92891       10 10    0.4067   8.9667 2.220446e-16
-## 2.8      chr1  94712  95021       12 12    0.1304   7.9444 1.167434e-04
-## 3.6      chr1 115200 115276       10 10   -0.3957   8.1833 2.634559e-12</code></pre>
+## 2.8      chr1  94712  95021       12 12    0.1304   7.9444 8.214642e-05
+## 3.6      chr1 115200 115276       10 10   -0.3957   8.1833 3.345990e-12
+## 3.19     chr1 137179 137244       10 10    0.3573   8.5000 8.456347e-12</code></pre>
 <pre class="r"><code>region_methylKit &lt;- getSigRegion(obj_methylKit)
 head(region_methylKit)</code></pre>
 <pre><code>##      seqnames start   end nC.valid nC mean.diff mean.cov  region.pval
-## 1.1      chr1   109   651       17 18    0.2780   3.7647 5.744459e-04
-## 1.11     chr1 26853 27083       10 10   -0.3126   6.8500 6.306067e-14
-## 1.14     chr1 30691 30768       11 11   -0.1776   8.3788 4.028997e-05
-## 1.24     chr1 47817 47966       15 16   -0.2058   7.6111 1.330166e-08
-## 1.32     chr1 65562 65735       10 10   -0.5742   5.2167 0.000000e+00
-## 2.8      chr1 92672 92891       10 10    0.4067   8.9667 0.000000e+00</code></pre>
+## 1.2      chr1 26853 27083       10 10   -0.3126   6.8500 6.306067e-14
+## 1.5      chr1 30691 30768       11 11   -0.1776   8.3788 4.028997e-05
+## 1.13     chr1 47817 47966       16 16   -0.2058   7.1354 4.314515e-08
+## 1.21     chr1 65562 65735       10 10   -0.5742   5.2167 0.000000e+00
+## 1.36     chr1 92672 92891       10 10    0.4067   8.9667 0.000000e+00
+## 1.38     chr1 94712 95021       12 12    0.1304   7.9444 1.295822e-10</code></pre>
 </div>
 </div>
 <div id="a-time-course-example" class="section level1">
@@ -1625,7 +1625,7 @@ for (i in 1:length(raw_files)){
 bs_object &lt;- do.call(&quot;combine&quot;, c(bs_object_list))
 bs_object</code></pre>
 <pre><code>## An object of type 'BSseq' with
-##   98270 methylation loci
+##   37653 methylation loci
 ##   24 samples
 ## has not been smoothed
 ## All assays are in-memory</code></pre>
@@ -1638,7 +1638,7 @@ bs_object &lt;- bs_object[filter, ]</code></pre>
 <p>Calculate the statistics. A dataframe of the meta data will be passed to function <code>calcLociStatTimeCourse</code>. Note that there must be columns named <code>Condition</code>, <code>Time</code> and <code>SampleName</code> in the dataframe.</p>
 <pre class="r"><code>obj &lt;- calcLociStatTimeCourse(bs_object, meta)</code></pre>
 <pre class="r"><code>obj</code></pre>
-<pre><code>## MethCP object with 1 chromosomes, 68864 methylation loci
+<pre><code>## MethCP object with 1 chromosomes, 26001 methylation loci
 ## test: TimeCourse
 ## group1: GSM2481288_mC_Col-0_DS_r1 GSM2481289_mC_Col-0_DS_r2 GSM2481290_mC_Col-0_0DAI_r1 GSM2481291_mC_Col-0_0DAI_r2 GSM2481292_mC_Col-0_1DAI_r1 GSM2481293_mC_Col-0_1DAI_r2 GSM2481294_mC_Col-0_2DAI_r1 GSM2481295_mC_Col-0_2DAI_r2 GSM2481296_mC_Col-0_3DAI_r1 GSM2481297_mC_Col-0_3DAI_r2 GSM2481298_mC_Col-0_4DAI_r1 GSM2481299_mC_Col-0_4DAI_r2
 ## group2: GSM2481300_mC_rdd_DS_r1 GSM2481301_mC_rdd_DS_r2 GSM2481302_mC_rdd_0DAI_r1 GSM2481303_mC_rdd_0DAI_r2 GSM2481304_mC_rdd_1DAI_r1 GSM2481305_mC_rdd_1DAI_r2 GSM2481306_mC_rdd_2DAI_r1 GSM2481307_mC_rdd_2DAI_r2 GSM2481308_mC_rdd_3DAI_r1 GSM2481309_mC_rdd_3DAI_r2 GSM2481310_mC_rdd_4DAI_r1 GSM2481311_mC_rdd_4DAI_r2
@@ -1655,26 +1655,26 @@ bs_object &lt;- bs_object[filter, ]</code></pre>
 ##   4        1 [17395, 18755]      * |        33        33
 ##   5        1 [24187, 30879]      * |       261       261
 ##   6        1 [31698, 32137]      * |        12        12
-##               mean.diff         mean.cov region.pval
-##               &lt;numeric&gt;        &lt;numeric&gt;   &lt;numeric&gt;
-##   1  -0.210286889870713 8.77916666666667         NaN
-##   2  -0.105347633504205          5.90625         NaN
-##   3  -0.352193628051805 5.28888888888889         NaN
-##   4 -0.0467316315266419 7.70328282828283         NaN
-##   5 -0.0500255257458898 5.80300127713921         NaN
-##   6  -0.156167921614715 5.94097222222222         NaN
+##               mean.diff         mean.cov        region.pval
+##               &lt;numeric&gt;        &lt;numeric&gt;            &lt;array&gt;
+##   1  -0.210286889870713 8.77916666666667  0.719424766162904
+##   2  -0.105347633504205          5.90625  0.711095576044131
+##   3  -0.352193628051805 5.28888888888889  0.678248909131816
+##   4 -0.0467316315266419 7.70328282828283   0.29871002511238
+##   5 -0.0500255257458898 5.80300127713921 0.0774426161832503
+##   6  -0.156167921614715 5.94097222222222  0.304817794702126
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 <p>Get the DMRs.</p>
 <pre class="r"><code>regions &lt;- getSigRegion(obj)</code></pre>
 <pre class="r"><code>head(regions)</code></pre>
-<pre><code>##     seqnames  start    end nC.valid  nC mean.diff mean.cov  region.pval
-## 31         1 238367 239326       69  69   -0.1042   5.7144 0.0012861236
-## 56         1 329352 330116       41  41   -0.1038   5.4258 0.0073087325
-## 66         1 394175 395220       50  50   -0.2490   3.9292 0.0026789957
-## 70         1 405983 408116       52  52   -0.1079   6.3197 0.0082183067
-## 92         1 531037 532534       36  36   -0.1900   4.3507 0.0007397345
-## 187        1 962256 966028      145 145   -0.1049   5.9529 0.0029463070</code></pre>
+<pre><code>##     seqnames   start     end nC.valid  nC mean.diff mean.cov  region.pval
+## 31         1  238367  239326       69  69   -0.1042   5.7144 0.0012861236
+## 66         1  394175  395220       50  50   -0.2490   3.9292 0.0026789957
+## 70         1  405983  408116       52  52   -0.1079   6.3197 0.0082183067
+## 92         1  531037  532534       36  36   -0.1900   4.3507 0.0007397345
+## 187        1  962256  966028      145 145   -0.1049   5.9529 0.0029463070
+## 241        1 1258866 1259519       30  30   -0.1454   5.6153 0.0028433185</code></pre>
 </div>
 <div id="session-info" class="section level1">
 <h1><span class="header-section-number">3</span> Session info</h1>

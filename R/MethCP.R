@@ -19,6 +19,10 @@ setClassUnion("characterORnumeric", c("character", "numeric"))
 #' @slot segmentation a \code{GRanges} object containing the segments and their
 #' infomation such as region-based statistics, coverages, etc.
 #'
+#' @importFrom stats lm na.omit cov qnorm
+#' @importFrom bsseq getCoverage
+#' @importFrom methods is
+#'
 #' @examples
 #'
 #' @export
@@ -59,8 +63,6 @@ setClass("MethCP", representation(test = "character",
 #' @param pos a numeric vector containing the cytosine positions.
 #' @param pvals a numeric vector containing the \code{p}-values for each cytosine.
 #' @param effect.size a numeric vector containing the effect sizes for each cytosine.
-#' @param testName a character string containing the names of the test to be
-#' performed per cytosine.
 #'
 #' @examples
 #' obj <- MethCP(test = "myTest",

@@ -137,6 +137,7 @@ calcLociStat <- function(bs.object, group1, group2,
       errorInd <- rowSums(as.data.frame(getCoverage(o, type = "M"))) /
         rowSums(as.data.frame(getCoverage(o)))
       errorInd <- (errorInd == 0) | (errorInd == 1)
+      errorInd[is.na(errorInd)] = FALSE
       obj_filtered <- obj[filter & !errorInd, ]
       invisible(capture.output(tmp <- calculateDiffMeth(obj_filtered)))
       gr <- GRanges(seqnames = tmp$chr,
