@@ -11,7 +11,7 @@
 
 <meta name="author" content="Boying Gong" />
 
-<meta name="date" content="2018-10-16" />
+<meta name="date" content="2019-01-29" />
 
 <title>methcp: User’s Guide</title>
 
@@ -1348,8 +1348,14 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -1358,14 +1364,74 @@ button.code-folding-btn:focus {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
 </script>
 
 <!-- code folding -->
-
 
 
 
@@ -1472,14 +1538,15 @@ div.tocify {
 
 <h1 class="title toc-ignore">methcp: User’s Guide</h1>
 <h4 class="author"><em>Boying Gong</em></h4>
-<h4 class="date"><em>2018-10-16</em></h4>
+<h4 class="date"><em>2019-01-29</em></h4>
 
 </div>
 
 
 <p>Load packages.</p>
-<pre class="r"><code>library(bsseq)
-library(methcp)</code></pre>
+<pre class="r"><code>library(bsseq)</code></pre>
+<pre><code>## Warning: package 'BiocParallel' was built under R version 3.5.2</code></pre>
+<pre class="r"><code>library(methcp)</code></pre>
 <div id="two-group-comparison" class="section level1">
 <h1><span class="header-section-number">1</span> Two-group comparison</h1>
 <p>In this section, we use the CpG methylation data from an Arabidopsis dataset available from GEO with accession number <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM954584">GSM954584</a>. We take a subset of chromosome 1 and 2 from each of the samples and perform differential analysis between the wild-type plants and the H2A.Z mutant plants, which we refer to as <code>treatment</code> and <code>control</code> in the rest of the document.</p>
@@ -1586,10 +1653,10 @@ head(region_DSS)</code></pre>
 <pre><code>##      seqnames  start    end nC.valid nC mean.diff mean.cov  region.pval
 ## 1.1      chr1    109    512       11 12    0.3924   3.3636 1.602589e-04
 ## 1.4      chr1  26852  27083       11 11   -0.3096   6.6667 3.525229e-08
-## 1.15     chr1  65562  65735       10 10   -0.5742   5.2167 0.000000e+00
+## 1.15     chr1  47817  47966       15 16   -0.2058   7.6111 8.381894e-05
+## 1.24     chr1  65562  65735       10 10   -0.5742   5.2167 0.000000e+00
 ## 2.8      chr1  94712  95021       12 12    0.1304   7.9444 8.214642e-05
-## 3.6      chr1 115200 115276       10 10   -0.3957   8.1833 3.345990e-12
-## 3.19     chr1 137179 137244       10 10    0.3573   8.5000 8.456347e-12</code></pre>
+## 3.6      chr1 115200 115276       10 10   -0.3957   8.1833 3.345990e-12</code></pre>
 <pre class="r"><code>region_methylKit &lt;- getSigRegion(obj_methylKit)
 head(region_methylKit)</code></pre>
 <pre><code>##      seqnames start   end nC.valid nC mean.diff mean.cov  region.pval
@@ -1597,8 +1664,8 @@ head(region_methylKit)</code></pre>
 ## 1.5      chr1 30691 30768       11 11   -0.1776   8.3788 4.028997e-05
 ## 1.13     chr1 47817 47966       16 16   -0.2058   7.1354 4.314515e-08
 ## 1.21     chr1 65562 65735       10 10   -0.5742   5.2167 0.000000e+00
-## 1.36     chr1 92672 92891       10 10    0.4067   8.9667 0.000000e+00
-## 1.38     chr1 94712 95021       12 12    0.1304   7.9444 1.295822e-10</code></pre>
+## 1.38     chr1 92672 92891       10 10    0.4067   8.9667 0.000000e+00
+## 1.40     chr1 94712 95021       12 12    0.1304   7.9444 1.295822e-10</code></pre>
 </div>
 </div>
 <div id="a-time-course-example" class="section level1">
@@ -1647,22 +1714,22 @@ bs_object &lt;- bs_object[filter, ]</code></pre>
 <pre class="r"><code>obj &lt;- segmentMethCP(obj, bs_object, region.test = &quot;stouffer&quot;, mc.cores = 1)</code></pre>
 <pre class="r"><code>head(obj@segmentation)</code></pre>
 <pre><code>## GRanges object with 6 ranges and 5 metadata columns:
-##     seqnames         ranges strand |  nC.valid        nC
-##        &lt;Rle&gt;      &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt;
-##   1        1 [  108,   948]      * |        30        30
-##   2        1 [ 5458,  5465]      * |         4         4
-##   3        1 [ 6501,  7034]      * |        15        15
-##   4        1 [17395, 18755]      * |        33        33
-##   5        1 [24187, 30879]      * |       261       261
-##   6        1 [31698, 32137]      * |        12        12
-##               mean.diff         mean.cov        region.pval
-##               &lt;numeric&gt;        &lt;numeric&gt;            &lt;array&gt;
-##   1  -0.210286889870713 8.77916666666667  0.719424766162904
-##   2  -0.105347633504205          5.90625  0.711095576044131
-##   3  -0.352193628051805 5.28888888888889  0.678248909131816
-##   4 -0.0467316315266419 7.70328282828283   0.29871002511238
-##   5 -0.0500255257458898 5.80300127713921 0.0774426161832503
-##   6  -0.156167921614715 5.94097222222222  0.304817794702126
+##     seqnames      ranges strand |  nC.valid        nC           mean.diff
+##        &lt;Rle&gt;   &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt;           &lt;numeric&gt;
+##   1        1     108-948      * |        30        30  -0.210286889870713
+##   2        1   5458-5465      * |         4         4  -0.105347633504205
+##   3        1   6501-7034      * |        15        15  -0.352193628051805
+##   4        1 17395-18755      * |        33        33 -0.0467316315266419
+##   5        1 24187-30879      * |       261       261 -0.0500255257458898
+##   6        1 31698-32137      * |        12        12  -0.156167921614715
+##             mean.cov        region.pval
+##            &lt;numeric&gt;          &lt;numeric&gt;
+##   1 8.77916666666667  0.719424766162904
+##   2          5.90625  0.711095576044131
+##   3 5.28888888888889  0.678248909131816
+##   4 7.70328282828283   0.29871002511238
+##   5 5.80300127713921 0.0774426161832503
+##   6 5.94097222222222  0.304817794702126
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 <p>Get the DMRs.</p>
@@ -1679,13 +1746,13 @@ bs_object &lt;- bs_object[filter, ]</code></pre>
 <div id="session-info" class="section level1">
 <h1><span class="header-section-number">3</span> Session info</h1>
 <pre class="r"><code>sessionInfo() </code></pre>
-<pre><code>## R version 3.4.4 (2018-03-15)
+<pre><code>## R version 3.5.1 (2018-07-02)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
 ## Running under: macOS High Sierra 10.13
 ## 
 ## Matrix products: default
-## BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
-## LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+## BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -1695,44 +1762,51 @@ bs_object &lt;- bs_object[filter, ]</code></pre>
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] methcp_0.1.0               bsseq_1.14.0              
-##  [3] SummarizedExperiment_1.8.1 DelayedArray_0.4.1        
-##  [5] matrixStats_0.53.1         Biobase_2.38.0            
-##  [7] GenomicRanges_1.30.3       GenomeInfoDb_1.14.0       
-##  [9] IRanges_2.12.0             S4Vectors_0.16.0          
-## [11] BiocGenerics_0.24.0       
+##  [1] methcp_0.1.0                bsseq_1.18.0               
+##  [3] SummarizedExperiment_1.12.0 DelayedArray_0.8.0         
+##  [5] BiocParallel_1.16.5         matrixStats_0.54.0         
+##  [7] Biobase_2.42.0              GenomicRanges_1.34.0       
+##  [9] GenomeInfoDb_1.18.1         IRanges_2.16.0             
+## [11] S4Vectors_0.20.1            BiocGenerics_0.28.0        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] qvalue_2.10.0            gtools_3.5.0            
-##  [3] locfit_1.5-9.1           reshape2_1.4.3          
-##  [5] DNAcopy_1.52.0           splines_3.4.4           
-##  [7] lattice_0.20-35          colorspace_1.3-2        
-##  [9] htmltools_0.3.6          methylKit_1.4.1         
-## [11] rtracklayer_1.38.3       yaml_2.1.19             
-## [13] DSS_2.26.0               XML_3.98-1.11           
-## [15] rlang_0.2.0              R.oo_1.22.0             
-## [17] pillar_1.2.2             R.utils_2.6.0           
-## [19] fastseg_1.24.0           BiocParallel_1.12.0     
-## [21] GenomeInfoDbData_1.0.0   plyr_1.8.4              
-## [23] stringr_1.3.0            zlibbioc_1.24.0         
-## [25] Biostrings_2.46.0        munsell_0.4.3           
-## [27] gtable_0.2.0             R.methodsS3_1.7.1       
-## [29] codetools_0.2-15         coda_0.19-1             
-## [31] evaluate_0.10.1          knitr_1.20              
-## [33] permute_0.9-4            Rcpp_0.12.16            
-## [35] scales_0.5.0             backports_1.1.2         
-## [37] limma_3.34.9             XVector_0.18.0          
-## [39] Rsamtools_1.30.0         ggplot2_3.0.0           
-## [41] digest_0.6.15            stringi_1.2.2           
-## [43] numDeriv_2016.8-1        grid_3.4.4              
-## [45] rprojroot_1.3-2          tools_3.4.4             
-## [47] bitops_1.0-6             bbmle_1.0.20            
-## [49] magrittr_1.5             RCurl_1.95-4.10         
-## [51] lazyeval_0.2.1           tibble_1.4.2            
-## [53] MASS_7.3-50              Matrix_1.2-14           
-## [55] data.table_1.10.4-3      rmarkdown_1.9           
-## [57] emdbook_1.3.9            mclust_5.4              
-## [59] GenomicAlignments_1.14.2 compiler_3.4.4</code></pre>
+##  [1] splines_3.5.1            DelayedMatrixStats_1.4.0
+##  [3] R.utils_2.7.0            gtools_3.8.1            
+##  [5] assertthat_0.2.0         BSgenome_1.50.0         
+##  [7] GenomeInfoDbData_1.2.0   Rsamtools_1.34.0        
+##  [9] yaml_2.2.0               numDeriv_2016.8-1       
+## [11] pillar_1.3.1             lattice_0.20-38         
+## [13] glue_1.3.0               limma_3.38.3            
+## [15] bbmle_1.0.20             digest_0.6.18           
+## [17] XVector_0.22.0           qvalue_2.14.1           
+## [19] colorspace_1.4-0         htmltools_0.3.6         
+## [21] Matrix_1.2-15            R.oo_1.22.0             
+## [23] plyr_1.8.4               XML_3.98-1.16           
+## [25] pkgconfig_2.0.2          emdbook_1.3.10          
+## [27] DSS_2.30.1               zlibbioc_1.28.0         
+## [29] purrr_0.3.0              scales_1.0.0            
+## [31] HDF5Array_1.10.1         tibble_2.0.1            
+## [33] ggplot2_3.1.0            lazyeval_0.2.1          
+## [35] mclust_5.4.2             magrittr_1.5            
+## [37] crayon_1.3.4             evaluate_0.12           
+## [39] R.methodsS3_1.7.1        MASS_7.3-51.1           
+## [41] tools_3.5.1              data.table_1.12.0       
+## [43] stringr_1.3.1            Rhdf5lib_1.4.2          
+## [45] munsell_0.5.0            locfit_1.5-9.1          
+## [47] bindrcpp_0.2.2           Biostrings_2.50.2       
+## [49] compiler_3.5.1           fastseg_1.28.0          
+## [51] rlang_0.3.1              rhdf5_2.26.2            
+## [53] grid_3.5.1               RCurl_1.95-4.11         
+## [55] methylKit_1.8.1          bitops_1.0-6            
+## [57] rmarkdown_1.11           DNAcopy_1.56.0          
+## [59] codetools_0.2-16         gtable_0.2.0            
+## [61] reshape2_1.4.3           R6_2.3.0                
+## [63] GenomicAlignments_1.18.1 knitr_1.21              
+## [65] dplyr_0.7.8              rtracklayer_1.42.1      
+## [67] bindr_0.1.1              permute_0.9-4           
+## [69] stringi_1.2.4            Rcpp_1.0.0              
+## [71] tidyselect_0.2.5         xfun_0.4                
+## [73] coda_0.19-2</code></pre>
 </div>
 
 
