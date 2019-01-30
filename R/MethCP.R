@@ -334,14 +334,14 @@ setMethod(
     # calculate region statistics
     ovrlp <- findOverlaps(unlist(object@stat), segments)
     if (region.test == "fisher"){
-      segments$region.pval <- tapply(
-        unlist(object@stat)$pval[ovrlp@from], ovrlp@to, .calcFisherPval)
+      segments$region.pval <- as.numeric(tapply(
+        unlist(object@stat)$pval[ovrlp@from], ovrlp@to, .calcFisherPval))
     } else if (region.test == "stouffer"){
       # segments$region.pval <- as.numeric(by(
       #   unlist(object@stat)[, c("mu", "pval")], ovrlp@to,
       #   function(x) .calcStoufferPval(x$pval, x$mu)))
-      segments$region.pval <- tapply(
-        unlist(object@stat)$pval[ovrlp@from], ovrlp@to, .calcStoufferPvalOneSided)
+      segments$region.pval <- as.numeric(tapply(
+        unlist(object@stat)$pval[ovrlp@from], ovrlp@to, .calcStoufferPvalOneSided))
     } else if (region.test == "weighted-variance"){
       if (is.null(object@stat[[1]]$mu)){
         stop("ERROR: weighted test not applicable, consider Stouffer's test or Fisher's test.")
