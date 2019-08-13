@@ -70,6 +70,8 @@
 #' @importFrom methylKit calculateDiffMeth
 #' @importClassesFrom methylKit methylBase
 #' @importFrom DSS DMLtest
+#' @importFrom bsseq sampleNames
+#' @importFrom GenomeInfoDb sortSeqlevels
 #' @import GenomicRanges
 #' @import parallel
 #' @importFrom utils capture.output

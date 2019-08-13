@@ -23,10 +23,8 @@ setClassUnion("characterORnumeric", c("character", "numeric"))
 #' @importFrom bsseq getCoverage
 #' @importFrom methods is
 #'
-#' @examples
-#'
 #' @export
-setClass("MethCP", representation(test = "character",
+MethCP <- setClass("MethCP", representation(test = "character",
                                   stat = "GRangesList",
                                   group1 = "characterORnumeric",
                                   group2 = "characterORnumeric",
@@ -84,13 +82,13 @@ setGeneric("MethCP",
            function(test = NA_character_,
                     group1 = NA,
                     group2 = NA,
-                    chr, pos, pvals, effect.size, ...)
+                    chr, pos, pvals, effect.size)
              standardGeneric("MethCP"))
 setMethod("MethCP", signature=character(0) ,
           function(test = NA_character_,
                    group1 = NA,
                    group2 = NA,
-                   chr, pos, pvals, effect.size, ...) {
+                   chr, pos, pvals, effect.size) {
             if (!(class(chr) %in% c("integer", "character"))){
               stop("ERROR: chr must be integter or character.")
             }
@@ -137,7 +135,13 @@ setMethod("MethCP", signature=character(0) ,
           }
 )
 
-
+#' @title The show method
+#'
+#' @description
+#' Print \code{MethCP} object information.
+#'
+#' @param object a \code{MethCP} object.
+#'
 #' @export
 setMethod("show", signature("MethCP"), function(object){
   cat(paste0("MethCP object with ", length(object@stat), " chromosomes, ",
@@ -186,6 +190,7 @@ setMethod("show", signature("MethCP"), function(object){
 #' termination rule for the segmentation algorithm.
 #' @param presegment_dist the maximum distance between cytosines for the
 #' presegmentation.
+#' @param ... argument to be passed to segment function in DNAcopy package
 #'
 #' @return a \code{MethCP} object that is not segmented.
 #'
@@ -305,7 +310,7 @@ setMethod(
                                          maploc=start(o[idx]),
                                          data.type="logratio")
                         invisible(capture.output(segment.cp.object <- segment(
-                          cp.object, verbose = 1, min.width = min.width, alpha = sig.level)))
+                          cp.object, verbose = 1, min.width = min.width, alpha = sig.level, ...)))
                         return(segment.cp.object$output)
                       }, mc.cores = mc.cores)
       res <- do.call("rbind", res)
