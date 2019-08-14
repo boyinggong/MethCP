@@ -82,7 +82,7 @@ calcLociStatTimeCourse <- function(
             "ERROR: Input must be an object of class",
             "\"BSseq\" from bsseq package."))
     }
-    if (class(meta) != "data.frame"){
+    if (!is(meta, "data.frame")){
         stop("ERROR: Meta data must be a data frame.")
     }
     if (!all(c("Condition", "Time", "SampleName") %in% colnames(meta))){
