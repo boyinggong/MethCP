@@ -17,27 +17,31 @@
 #'
 #' @param chr a character vector containing the cytosine chromosome infomation.
 #' @param pos a numeric vector containing the cytosine positions.
-#' @param pvals a numeric vector containing the \code{p}-values for each cytosine.
-#' @param effect.size a numeric vector containing the effect sizes for each cytosine.
+#' @param pvals a numeric vector containing the \code{p}-values for each
+#' cytosine.
+#' @param effect.size a numeric vector containing the effect sizes for each
+#' cytosine.
 #' @param testName a character string containing the names of the test to be
 #' performed per cytosine.
 #'
 #' @return a \code{MethCP} object that is not segmented.
 #'
 #' @examples
-#' obj <- methcpFromStat(testName = "myTest",
-#'                       chr = rep("Chr01", 5),
-#'                       pos = c(2, 5, 9, 10, 18),
-#'                       effect.size = c(1, -1, NA, 9, Inf),
-#'                       pvals = c(0, 0.1, 0.9, NA, 0.02))
+#' obj <- methcpFromStat(
+#'     testName = "myTest",
+#'     chr = rep("Chr01", 5),
+#'     pos = c(2, 5, 9, 10, 18),
+#'     effect.size = c(1, -1, NA, 9, Inf),
+#'     pvals = c(0, 0.1, 0.9, NA, 0.02))
 #' obj
 #'
 #' @import parallel
 #'
 #' @export
 methcpFromStat <- function(chr, pos, pvals, effect.size, testName){
-  return(MethCP(test = testName,
-                group1 = "notApplicable",
-                group2 = "notApplicable",
-                chr = chr, pos = pos, pvals = pvals, effect.size = effect.size))
+    return(MethCP(
+        test = testName,
+        group1 = "notApplicable",
+        group2 = "notApplicable",
+        chr = chr, pos = pos, pvals = pvals, effect.size = effect.size))
 }

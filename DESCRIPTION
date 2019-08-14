@@ -2,14 +2,21 @@ Package: methcp
 Type: Package
 Title: Differential methylation anlsysis for bisulfite
         sequencing data
-Version: 0.1.0
+Version: 0.99.0
 Author: Boying Gong
 Maintainer: Boying Gong <jorothy_gong@berkeley.edu>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: methcp is a differentially methylated region 
+    (DMR) detecting method for whole-genome bisulfite sequencing (WGBS) 
+    data, which is applicable for a wide range of experimental designs 
+    beyond the two-group comparisons, such as time-course data. 
+    methcp identifies DMRs based on change point detection, which 
+    naturally segments the genome and provides region-level 
+    differential analysis.
 License: Artistic-2.0
 Encoding: UTF-8
-LazyData: true
+LazyData: TRUE
 RoxygenNote: 6.1.1
+biocViews: DifferentialMethylation
 Imports: methods, utils, stats, parallel, bsseq, DSS, methylKit, DNAcopy, GenomicRanges, IRanges, GenomeInfoDb
-Suggests: testthat
+Suggests: testthat, knitr, rmarkdown
+VignetteBuilder: knitr

@@ -1,6 +1,10 @@
 
 #' @title Calculate the per-cytosine statistics for time-course data.
 #'
+#' @usage
+#' calcLociStatTimeCourse(
+#'     bs.object, meta, force.slope = FALSE, mc.cores = 1)
+#'
 #' @description
 #' For each cytosine, \code{calcLociStatTimeCourse} fits a linear model
 #' on the arcsin-tranformed methylation ratios, and test the differences
@@ -37,69 +41,83 @@
 #' time_point <- rep(1:nsamples, 2)
 #' ratios <- time_point/10 + 0.2
 #' sim_M <- sapply(1:(2*nsamples), function(i){
-#'   sapply(sim_cov[, i], function(j) rbinom(1, j, ratios[i]))
+#'     sapply(sim_cov[, i], function(j) rbinom(1, j, ratios[i]))
 #' })
 #' sim_M <- matrix(sim_M, ncol = 2*nsamples)
 #' # methylation ratios in the DMRs in the treatment group are
 #' # generated using Binomial(0.3)
 #' DMRs <- c(600:622, 1089:1103, 1698:1750)
-#' sim_M[DMRs, 1:5] <- sapply(sim_cov[DMRs, 1:5], function(x) rbinom(1, x, 0.3))
+#' sim_M[DMRs, 1:5] <- sapply(
+#'     sim_cov[DMRs, 1:5], function(x) rbinom(1, x, 0.3))
 #' # sample names
-#' sample_names <- c(paste0("treatment", 1:nsamples), paste0("control", 1:nsamples))
+#' sample_names <- c(paste0("treatment", 1:nsamples),
+#' paste0("control", 1:nsamples))
 #' colnames(sim_cov) <- sample_names
 #' colnames(sim_M) <- sample_names
 #'
 #' # create a bs.object
-#' bs_object_ts <- BSseq(gr = GRanges(seqnames = "Chr01",
-#'                                    IRanges(start = (1:nC)*10,
-#'                                            width = 1)),
-#'                       Cov = sim_cov, M = sim_M, sampleNames = sample_names)
+#' bs_object_ts <- BSseq(gr = GRanges(
+#'     seqnames = "Chr01", IRanges(
+#'         start = (1:nC)*10, width = 1)),
+#'     Cov = sim_cov, M = sim_M, sampleNames = sample_names)
 #' DMRs_pos_ts <- DMRs*10
-#' meta <- data.frame(Condition = rep(c("treatment", "control"), each = nsamples),
-#'                    SampleName = sample_names,
-#'                    Time = time_point)
+#' meta <- data.frame(
+#'     Condition = rep(
+#'         c("treatment", "control"),
+#'         each = nsamples),
+#'     SampleName = sample_names,
+#'     Time = time_point)
 #' obj_ts <- calcLociStatTimeCourse(bs_object_ts, meta)
 #' obj_ts
 #'
 #' @import parallel
 #'
 #' @export
-calcLociStatTimeCourse <- function(bs.object, meta, force.slope = FALSE, mc.cores = 1){
+calcLociStatTimeCourse <- function(
+    bs.object, meta, force.slope = FALSE,
+    mc.cores = 1){
 
-  if (!is(bs.object, "BSseq")){
-    stop("ERROR: Input must be an object of class \"BSseq\" from bsseq package.")
-  }
-  if (class(meta) != "data.frame"){
-    stop("ERROR: Meta data must be a data frame.")
-  }
-  if (!all(c("Condition", "Time", "SampleName") %in% colnames(meta))){
-    stop("ERROR: meta data must contain Condition, Time and SampleName")
-  }
-  coverage <- as.data.frame(getCoverage(bs.object, type = "Cov"))[, meta$SampleName]
-  M <- as.data.frame(getCoverage(bs.object, type = "M"))[, meta$SampleName]
-  ratios <- .asinTransform(M/coverage)
-  res <- mclapply(1:nrow(coverage), function(i){
-    suppressWarnings({
-      data <- meta
-      data$r <- t(ratios[i, ])[, 1]
-      data$cov <- t(coverage[i, ])[, 1]
-      data <- na.omit(data)
-      if (force.slope){
-        summary(lm(r~Time+Condition:Time, data=data, weights=cov))$coefficients[3, 3:4]
-      } else {
-        summary(lm(r~Condition+Time+Condition:Time, data=data, weights=cov))$coefficients[4, 3:4]
-      }
-    })
-  }, mc.cores = mc.cores)
-  res <- do.call("rbind", res)
-  stat <- granges(bs.object)
-  stat$stat <- qnorm(1-res[, 2]/2)*sign(res[, 1])
-  stat$pval <-res[, 2]
-  stat <- GenomicRanges::GRangesList(list(stat))
-  methcpObj <- new("MethCP",
-                   group1 = meta$SampleName[meta$Condition == unique(meta$Condition)[1]],
-                   group2 = meta$SampleName[meta$Condition == unique(meta$Condition)[2]],
-                   test = "TimeCourse",
-                   stat = stat)
-  return(methcpObj)
+    if (!is(bs.object, "BSseq")){
+        stop(paste0(
+            "ERROR: Input must be an object of class",
+            "\"BSseq\" from bsseq package."))
+    }
+    if (class(meta) != "data.frame"){
+        stop("ERROR: Meta data must be a data frame.")
+    }
+    if (!all(c("Condition", "Time", "SampleName") %in% colnames(meta))){
+        stop("ERROR: meta data must contain Condition, Time and SampleName")
+    }
+    coverage <- as.data.frame(getCoverage(
+        bs.object, type = "Cov"))[, meta$SampleName]
+    M <- as.data.frame(getCoverage(bs.object, type = "M"))[, meta$SampleName]
+    ratios <- .asinTransform(M/coverage)
+    res <- mclapply(seq_len(nrow(coverage)), function(i){
+        suppressWarnings({
+            data <- meta
+            data$r <- t(ratios[i, ])[, 1]
+            data$cov <- t(coverage[i, ])[, 1]
+            data <- na.omit(data)
+            if (force.slope){
+                summary(lm(
+                    r~Time+Condition:Time, data=data,
+                    weights=cov))$coefficients[3, 3:4]
+            } else {
+                summary(lm(
+                    r~Condition+Time+Condition:Time, data=data,
+                    weights=cov))$coefficients[4, 3:4]
+            }
+        })
+    }, mc.cores = mc.cores)
+    res <- do.call("rbind", res)
+    stat <- granges(bs.object)
+    stat$stat <- qnorm(1-res[, 2]/2)*sign(res[, 1])
+    stat$pval <-res[, 2]
+    stat <- GenomicRanges::GRangesList(list(stat))
+    methcpObj <- new(
+        "MethCP",
+        group1 = meta$SampleName[meta$Condition == unique(meta$Condition)[1]],
+        group2 = meta$SampleName[meta$Condition == unique(meta$Condition)[2]],
+        test = "TimeCourse", stat = stat)
+    return(methcpObj)
 }

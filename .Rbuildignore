@@ -15,7 +15,6 @@ README[.]md
 # R related
 ^cran-comments[.].*$
 inst/doc/.*_cache/*
-inst/doc/.*.html
 ^Makefile$
 ^nohup.*$
 ^[.]devel
@@ -23,4 +22,5 @@ inst/doc/.*.html
 ^[.]check
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^\.\./inst/NEWS$
+^doc$
+^Meta$

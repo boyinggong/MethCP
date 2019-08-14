@@ -11,9 +11,11 @@ methcpFromStat(chr, pos, pvals, effect.size, testName)
 
 \item{pos}{a numeric vector containing the cytosine positions.}
 
-\item{pvals}{a numeric vector containing the \code{p}-values for each cytosine.}
+\item{pvals}{a numeric vector containing the \code{p}-values for each
+cytosine.}
 
-\item{effect.size}{a numeric vector containing the effect sizes for each cytosine.}
+\item{effect.size}{a numeric vector containing the effect sizes for each
+cytosine.}
 
 \item{testName}{a character string containing the names of the test to be
 performed per cytosine.}
@@ -36,11 +38,12 @@ package which contains the raw data including coverges, methylated
 counts and position infomation for every cytosine in the dataset.
 }
 \examples{
-obj <- methcpFromStat(testName = "myTest",
-                      chr = rep("Chr01", 5),
-                      pos = c(2, 5, 9, 10, 18),
-                      effect.size = c(1, -1, NA, 9, Inf),
-                      pvals = c(0, 0.1, 0.9, NA, 0.02))
+obj <- methcpFromStat(
+    testName = "myTest",
+    chr = rep("Chr01", 5),
+    pos = c(2, 5, 9, 10, 18),
+    effect.size = c(1, -1, NA, 9, Inf),
+    pvals = c(0, 0.1, 0.9, NA, 0.02))
 obj
 
 }

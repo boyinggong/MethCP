@@ -9,41 +9,53 @@ setClassUnion("characterORnumeric", c("character", "numeric"))
 #' analysis using method \code{MethCP} on whole genome bisulfite sequencing
 #' data.
 #'
-#' @slot test a character string of the name of the per-cytosine statistcis.
-#' @slot group1 a character vector containing the sample names of the treatment
-#' group.
-#' @slot group2 a character vector containing the sample names of the control
-#' group.
+#' @slot test a character string of the name of the per-cytosine
+#' statistcis.
+#' @slot group1 a character vector containing the sample names of
+#' the treatment group.
+#' @slot group2 a character vector containing the sample names of
+#' the control group.
 #' @slot stat a \code{GRangesList} object containing the results of
 #' per-cytosine tests.
-#' @slot segmentation a \code{GRanges} object containing the segments and their
-#' infomation such as region-based statistics, coverages, etc.
+#' @slot segmentation a \code{GRanges} object containing the segments
+#' and their infomation such as region-based statistics, coverages, etc.
 #'
 #' @importFrom stats lm na.omit cov qnorm
 #' @importFrom bsseq getCoverage
 #' @importFrom methods is
 #'
-#' @export
-MethCP <- setClass("MethCP", representation(test = "character",
-                                  stat = "GRangesList",
-                                  group1 = "characterORnumeric",
-                                  group2 = "characterORnumeric",
-                                  segmentation = "GRanges"),
-         prototype(test = NA_character_,
-                   group1 = NA,
-                   group2 = NA,
-                   stat = GenomicRanges::GRangesList(list()),
-                   segmentation = GenomicRanges::GRanges()))
+#' @name MethCP-class
+#' @rdname MethCP-class
+#' @exportClass MethCP
+MethCP <- setClass(
+    "MethCP",
+    representation(
+        test = "character",
+        stat = "GRangesList",
+        group1 = "characterORnumeric",
+        group2 = "characterORnumeric",
+        segmentation = "GRanges"),
+    prototype(
+        test = NA_character_,
+        group1 = NA,
+        group2 = NA,
+        stat = GenomicRanges::GRangesList(list()),
+        segmentation = GenomicRanges::GRanges()))
 
 #' @title The constructor function for \code{MethCP} objects.
 #'
 #' @description
 #' The constructor function for \code{MethCP} objects.
 #'
+#' @usage
+#' MethCP(
+#'     test = NA_character_, group1 = NA, group2 = NA, chr, pos,
+#'     pvals, effect.size)
+#'
 #' @details
 #' If not specified by function \code{calcLociStatTimeCourse},
-#' \code{calcLociStat}, the parameter \code{test} can be set to any user-specified
-#' string indicating the name of the test performed.
+#' \code{calcLociStat}, the parameter \code{test} can be set to any
+#' user-specified string indicating the name of the test performed.
 #'
 #' In the cases where the goal is not to compare between treatment and control
 #' groups, parameter \code{group1} and \code{group2} can be set to \code{NA}.
@@ -52,24 +64,31 @@ MethCP <- setClass("MethCP", representation(test = "character",
 #' \code{GRangesList} object where each element in the list contains statistics
 #' for each of the chromosome in the dataset.
 #'
-#' @param test a character string of the name of the per-cytosine statistcis.
-#' @param group1 a character vector containing the sample names of the treatment
-#' group.
-#' @param group2 a character vector containing the sample names of the control
-#' group.
-#' @param chr a character vector containing the cytosine chromosome infomation.
+#' @param test a character string of the name of the per-cytosine
+#' statistcis.
+#' @param group1 a character vector containing the sample names of
+#' the treatment group.
+#' @param group2 a character vector containing the sample names of
+#' the control group.
+#' @param chr a character vector containing the cytosine chromosome
+#' infomation.
 #' @param pos a numeric vector containing the cytosine positions.
-#' @param pvals a numeric vector containing the \code{p}-values for each cytosine.
-#' @param effect.size a numeric vector containing the effect sizes for each cytosine.
+#' @param pvals a numeric vector containing the \code{p}-values for each
+#' cytosine.
+#' @param effect.size a numeric vector containing the effect sizes
+#' for each cytosine.
+#'
+#' @return A \code{MethCP} objects.
 #'
 #' @examples
-#' obj <- MethCP(test = "myTest",
-#'               group1 = paste0("Treatment", 1:3),
-#'               group2 = paste0("Control", 1:3),
-#'               chr = rep("Chr01", 5),
-#'               pvals = c(0, 0.1, 0.9, NA, 0.02),
-#'               pos = c(2, 5, 9, 10, 18),
-#'               effect.size = c(1, -1, NA, 9, Inf))
+#' obj <- MethCP(
+#'     test = "myTest",
+#'     group1 = paste0("Treatment", 1:3),
+#'     group2 = paste0("Control", 1:3),
+#'     chr = rep("Chr01", 5),
+#'     pvals = c(0, 0.1, 0.9, NA, 0.02),
+#'     pos = c(2, 5, 9, 10, 18),
+#'     effect.size = c(1, -1, NA, 9, Inf))
 #' # MethCP will omit the NAs and infinite values.
 #' obj
 #'
@@ -77,62 +96,77 @@ MethCP <- setClass("MethCP", representation(test = "character",
 #' @importFrom methods new
 #' @importFrom stats qnorm na.omit
 #'
+#' @name MethCP
+
+#' @rdname MethCP-class
 #' @export
-setGeneric("MethCP",
-           function(test = NA_character_,
-                    group1 = NA,
-                    group2 = NA,
-                    chr, pos, pvals, effect.size)
-             standardGeneric("MethCP"))
-setMethod("MethCP", signature=character(0) ,
-          function(test = NA_character_,
-                   group1 = NA,
-                   group2 = NA,
-                   chr, pos, pvals, effect.size) {
-            if (!(class(chr) %in% c("integer", "character"))){
-              stop("ERROR: chr must be integter or character.")
-            }
-            if (!(class(pos) %in% c("integer", "numeric"))){
-              stop("ERROR: pos must be integter or numeric.")
-            }
-            if (!(class(pvals) %in% c("numeric"))){
-              stop("ERROR: pvals must be numeric.")
-            }
-            if (!all(na.omit(pvals <= 1 & pvals >= 0))){
-              stop("ERROR: pvals must be between 0 and 1.")
-            }
-            if (!(class(effect.size) %in% c("integer", "numeric"))){
-              stop("ERROR: effect.size must be integter or numeric")
-            }
-            npos = length(chr)
-            if ((length(pos) != npos) | (length(pvals) != npos) |
-                (length(pvals) != npos)){
-              stop("ERROR: lengths of chr, pos, pvals and effect.size do not match.")
-            }
-            filter = (is.na(pvals)) | (is.na(effect.size)) |
-              (is.infinite(pvals)) | (is.infinite(pvals))
-            if (any(filter)){
-              message(paste0("Filtering out NAs and infinite values. \n",
-                             "Cytosine counts before filtering: ", npos,
-                             ". \nCytosine counts after filtering: ", sum(!filter), "."))
-              chr = chr[!filter]
-              pos = pos[!filter]
-              pvals = pvals[!filter]
-              effect.size = effect.size[!filter]
-            }
-            norm_stats <- qnorm(1-pvals/2)*sign(effect.size)
-            stat <- GenomicRanges::GRangesList(lapply(unique(chr), function(o){
-              GRanges(seqnames = chr[chr == o],
-                      ranges = IRanges(start = pos[chr == o], width = 1),
-                      stat = norm_stats[chr == o],
-                      pval = pvals[chr == o])
-            }))
-            methcpObj <- new("MethCP",
-                             group1 = "notApplicable",
-                             group2 = "notApplicable",
-                             test = test,
-                             stat = stat)
-          }
+setGeneric(
+    "MethCP",
+    function(
+        test = NA_character_,
+        group1 = NA,
+        group2 = NA,
+        chr, pos, pvals, effect.size)
+        standardGeneric("MethCP"))
+#' @rdname MethCP-class
+setMethod(
+    "MethCP", signature=character(0) ,
+    function(
+        test = NA_character_,
+        group1 = NA,
+        group2 = NA,
+        chr, pos, pvals, effect.size)
+    {
+        if (!(class(chr) %in% c("integer", "character"))){
+            stop("ERROR: chr must be integter or character.")
+        }
+        if (!(class(pos) %in% c("integer", "numeric"))){
+            stop("ERROR: pos must be integter or numeric.")
+        }
+        if (!(class(pvals) %in% c("numeric"))){
+            stop("ERROR: pvals must be numeric.")
+        }
+        if (!all(na.omit(pvals <= 1 & pvals >= 0))){
+            stop("ERROR: pvals must be between 0 and 1.")
+        }
+        if (!(class(effect.size) %in% c("integer", "numeric"))){
+            stop("ERROR: effect.size must be integter or numeric")
+        }
+        npos = length(chr)
+        if ((length(pos) != npos) | (length(pvals) != npos) |
+            (length(pvals) != npos)){
+            stop(paste(
+                "ERROR: lengths of chr, pos,",
+                "pvals and effect.size do not match."))
+        }
+        filter = (is.na(pvals)) | (is.na(effect.size)) |
+            (is.infinite(pvals)) | (is.infinite(pvals))
+        if (any(filter)){
+            message(paste0(
+                "Filtering out NAs and infinite values. \n",
+                "Cytosine counts before filtering: ", npos,
+                ". \nCytosine counts after filtering: ",
+                sum(!filter), "."))
+            chr = chr[!filter]
+            pos = pos[!filter]
+            pvals = pvals[!filter]
+            effect.size = effect.size[!filter]
+        }
+        norm_stats <- qnorm(1-pvals/2)*sign(effect.size)
+        stat <- GenomicRanges::GRangesList(lapply(unique(chr), function(o){
+            GRanges(
+                seqnames = chr[chr == o],
+                ranges = IRanges(start = pos[chr == o], width = 1),
+                stat = norm_stats[chr == o],
+                pval = pvals[chr == o])
+        }))
+        methcpObj <- new(
+            "MethCP",
+            group1 = "notApplicable",
+            group2 = "notApplicable",
+            test = test,
+            stat = stat)
+    }
 )
 
 #' @title The show method
@@ -142,23 +176,35 @@ setMethod("MethCP", signature=character(0) ,
 #'
 #' @param object a \code{MethCP} object.
 #'
+#' @return No value will be returned.
+#'
 #' @export
 setMethod("show", signature("MethCP"), function(object){
-  cat(paste0("MethCP object with ", length(object@stat), " chromosomes, ",
-             sum(sapply(object@stat, length)),
-             " methylation loci\n"))
-  cat(paste0("test: ", object@test, "\n"))
-  cat(paste0("group1: ", paste(object@group1, collapse = " "),
-             "\ngroup2: ", paste(object@group2, collapse = " ")))
-  if (length(object@segmentation) == 0){
-    cat("\nhas not been segmented")
-  } else {
-    cat("\nhas been segmented")
-  }
+    cat(paste0(
+        "MethCP object with ", length(object@stat), " chromosomes, ",
+        sum(vapply(object@stat, length, FUN.VALUE = numeric(1))),
+        " methylation loci\n"))
+    cat(paste0("test: ", object@test, "\n"))
+    cat(paste0(
+        "group1: ", paste(object@group1, collapse = " "),
+        "\ngroup2: ", paste(object@group2, collapse = " ")))
+    if (length(object@segmentation) == 0){
+        cat("\nhas not been segmented")
+    } else {
+        cat("\nhas been segmented")
+    }
 })
 
 
 #' @title Perform segmentation on a \code{MethCP} object.
+#'
+#' @usage
+#' segmentMethCP(
+#'     methcp.object, bs.object,
+#'     region.test = c(
+#'         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
+#'     mc.cores = 1, min.width = 2, sig.level = 0.01,
+#'     presegment_dist = 600, ...)
 #'
 #' @description Perform CBS algorithm that segments the genome into
 #' similar levels of sigficance.
@@ -172,12 +218,11 @@ setMethod("show", signature("MethCP"), function(object){
 #'
 #' If \code{region.test = stouffer} Stouffer's test is applied.
 #'
-#' If \code{region.test = "weighted-variance"} we use the variance of the test to
-#' combine per-cytosine based statistcis into a region-based statistic.
+#' If \code{region.test = "weighted-variance"} we use the variance of the
+#' test to combine per-cytosine based statistcis into a region-based statistic.
 #'
-#' If \code{region.test = "weighted-coverage"} we use the coverage of the test to
-#' combine per-cytosine based statistcis into a region-based statistic.
-#'
+#' If \code{region.test = "weighted-coverage"} we use the coverage of the
+#' test to combine per-cytosine based statistcis into a region-based statistic.
 #'
 #' @param methcp.object a \code{MethCP} object.
 #' @param bs.object a \code{BSseq} object from the \code{bsseq} package.
@@ -202,173 +247,211 @@ setMethod("show", signature("MethCP"), function(object){
 #' # with probability 0.3.
 #' nC <- 2000
 #' sim_cov <- rnbinom(6*nC, 5, 0.5) + 5
-#' sim_M <- sapply(sim_cov, function(x) rbinom(1, x, 0.3))
+#' sim_M <- vapply(
+#'     sim_cov, function(x) rbinom(1, x, 0.3), FUN.VALUE = numeric(1))
 #' sim_cov <- matrix(sim_cov, ncol = 6)
 #' sim_M <- matrix(sim_M, ncol = 6)
 #' # methylation ratios in the DMRs in the treatment group are
 #' # generated using Binomial(0.7)
 #' DMRs <- c(600:622, 1089:1103, 1698:1750)
-#' sim_M[DMRs, 1:3] <- sapply(sim_cov[DMRs, 1:3],
-#'                            function(x) rbinom(1, x, 0.7))
+#' sim_M[DMRs, 1:3] <- vapply(
+#'     sim_cov[DMRs, 1:3], function(x) rbinom(1, x, 0.7),
+#'     FUN.VALUE = numeric(1))
 #' # sample names
 #' sample_names <- c(paste0("treatment", 1:3), paste0("control", 1:3))
 #' colnames(sim_cov) <- sample_names
 #' colnames(sim_M) <- sample_names
 #'
 #' # create a bs.object
-#' bs_object <- BSseq(gr = GRanges(seqnames = "Chr01",
-#'                                 IRanges(start = (1:nC)*10,
-#'                                         width = 1)),
-#'                    Cov = sim_cov, M = sim_M,
-#'                    sampleNames = sample_names)
+#' bs_object <- BSseq(gr = GRanges(
+#'     seqnames = "Chr01", IRanges(start = (1:nC)*10, width = 1)),
+#'     Cov = sim_cov, M = sim_M,
+#'     sampleNames = sample_names)
 #' DMRs_pos <- DMRs*10
-#' methcp_obj1 <- calcLociStat(bs_object,
-#'                             group1 = paste0("treatment", 1:3),
-#'                             group2 = paste0("control", 1:3),
-#'                             test = "DSS")
-#' methcp_obj1 <- segmentMethCP(methcp_obj1, bs_object,
-#'                              region.test = "weighted-coverage",
-#'                              mc.cores = 1)
+#' methcp_obj1 <- calcLociStat(
+#'     bs_object,
+#'     group1 = paste0("treatment", 1:3),
+#'     group2 = paste0("control", 1:3),
+#'     test = "DSS")
+#' methcp_obj1 <- segmentMethCP(
+#'     methcp_obj1, bs_object,
+#'     region.test = "weighted-coverage",
+#'     mc.cores = 1)
 #'
 #' @import parallel
 #' @importFrom DNAcopy CNA segment
 #' @importFrom bsseq getCoverage
 #'
-#' @export
-setGeneric("segmentMethCP",
-           function(methcp.object, bs.object,
-                    region.test = c("fisher", "stouffer",
-                                    "weighted-variance", "weighted-coverage"),
-                    mc.cores = 1, min.width = 2, sig.level = 0.01, presegment_dist = 600, ...)
-             standardGeneric("segmentMethCP"))
+#' @name segmentMethCP
+#' @rdname segmentMethCP-methods
+#' @exportMethod segmentMethCP
+setGeneric(
+    "segmentMethCP",
+    function(
+        methcp.object, bs.object,
+        region.test = c("fisher", "stouffer",
+                        "weighted-variance", "weighted-coverage"),
+        mc.cores = 1, min.width = 2, sig.level = 0.01,
+        presegment_dist = 600, ...)
+        standardGeneric("segmentMethCP"))
+#' @rdname segmentMethCP-methods
+#' @aliases segmentMethCP,MethCP-method
 setMethod(
-  "segmentMethCP", signature(methcp.object = "MethCP"),
-  function(methcp.object, bs.object,
-           region.test = c("fisher", "stouffer",
-                           "weighted-variance", "weighted-coverage"),
-           mc.cores = 1, min.width = 2, sig.level = 0.01, presegment_dist = 600, ...){
+    "segmentMethCP", signature(methcp.object = "MethCP"),
+    function(
+        methcp.object, bs.object,
+        region.test = c(
+            "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
+        mc.cores = 1, min.width = 2, sig.level = 0.01,
+        presegment_dist = 600, ...)
+    {
+        object <- methcp.object
+        if (!is(object, "MethCP")){
+            stop("ERROR: Input must be an object of class \"MethCP\".")
+        }
+        if (object@test == "methylKit" &
+            region.test %in% c("weighted-variance", "weighted-coverage")){
+            stop(paste(
+                "ERROR: can not apply weighted effect size method",
+                "with methylKit."))
+        }
+        if (length(object@segmentation) != 0){
+            a <- readline(paste(
+                "Object has been segmented.",
+                "Remove previous segmentation? (y/n) > "))
+            if (a == "y") {
+                message("Removed. Start running new segmentation ...")
+                object@segmentation <- GRanges()
+            } else {
+                message("Stopped.")
+                return(methcp.object)
+            }
+        }
+        if (object@test == "methylKit") {
+            object@stat <- GRangesList(lapply(names(object@stat), function(o){
+                tmp <- object@stat[[o]]
+                tmp$stat <- .pvalToStat(tmp$pval, tmp$methDiff)
+                tmp
+            }))
+        }
+        # calculate total coverage and methylated counts for each loci
+        object@stat <- GRangesList(
+            lapply(seq_len(length(object@stat)), function(o){
+            tmp <- object@stat[[o]]
+            ovrlp <- findOverlaps(granges(bs.object), tmp)
+            tmp$CovGroup1 <- rowSums(
+                as.data.frame(
+                    getCoverage(bs.object)[ovrlp@from, object@group1]))
+            tmp$CovGroup2 <- rowSums(
+                as.data.frame(
+                    getCoverage(bs.object)[ovrlp@from, object@group2]))
+            tmp
+        }))
+        # segmentation
+        # segments <- mclapply(object@stat, function(o){
+        #   cp.object <- CNA(o$stat,
+        #                    chrom=as.vector(o@seqnames),
+        #                    maploc=start(o),
+        #                    data.type="logratio")
+        #   invisible(capture.output(segment.cp.object <- segment(
+        #     cp.object, verbose = 1, min.width = min.width,
+        #     alpha = sig.level, ...)))
+        #   return(segment.cp.object$output)
+        # }, mc.cores = mc.cores)
+        # segments <- do.call("rbind", segments)
+        # segments$ID <- NULL
+        # segments$seg.mean <- NULL
+        # colnames(segments)[4] <- "nC.valid"
+        # segments <- GRanges(segments)
+        segments <- list()
+        for (chr in seq_len(length(object@stat))) {
+            o <- object@stat[[chr]]
+            pos <- start(o)
+            presegments <- split(
+                seq_len(length(pos)),
+                cumsum(c(TRUE, abs(diff(pos)) >= presegment_dist)))
+            res <- mclapply(
+                presegments,
+                function(idx){
+                    cp.object <- CNA(
+                        o[idx]$stat,
+                        chrom=as.vector(o[idx]@seqnames),
+                        maploc=start(o[idx]),
+                        data.type="logratio")
+                    invisible(capture.output(segment.cp.object <- segment(
+                        cp.object, verbose = 1, min.width = min.width,
+                        alpha = sig.level, ...)))
+                    return(segment.cp.object$output)
+                }, mc.cores = mc.cores)
+            res <- do.call("rbind", res)
+            res$ID <- NULL
+            res$seg.mean <- NULL
+            colnames(res)[4] <- "nC.valid"
+            segments[[chr]] <- res
+        }
+        segments <- as.data.frame(do.call("rbind", segments))
+        segments <- GRanges(segments)
 
-    object <- methcp.object
-    if (!is(object, "MethCP")){
-      stop("ERROR: Input must be an object of class \"MethCP\".")
-    }
-    if (object@test == "methylKit" &
-        region.test %in% c("weighted-variance", "weighted-coverage")){
-      stop("ERROR: can not apply weighted effect size method with methylKit.")
-    }
-    if (length(object@segmentation) != 0){
-      a <- readline("Object has been segmented. Remove previous segmentation? (y/n) > ")
-      if (a == "y") {
-        message("Removed. Start running new segmentation ...")
-        object@segmentation <- GRanges()
-      } else {
-        message("Stopped.")
+        # calculate region summary
+        ovrlp <- findOverlaps(granges(bs.object), segments)
+        segments$nC <- as.numeric(table(ovrlp@to))
+        M1 <- as.numeric(by(getCoverage(
+            bs.object, type = "M")[ovrlp@from, object@group1], ovrlp@to, sum))
+        M2 <- as.numeric(by(getCoverage(
+            bs.object, type = "M")[ovrlp@from, object@group2], ovrlp@to, sum))
+        Cov1 <- as.numeric(by(getCoverage(bs.object)[
+            ovrlp@from, object@group1], ovrlp@to, sum))
+        Cov2 <- as.numeric(by(getCoverage(bs.object)[
+            ovrlp@from, object@group2], ovrlp@to, sum))
+        segments$mean.diff <- M1/Cov1 - M2/Cov2
+        segments$mean.cov <- (Cov1 + Cov2)/length(
+            c(object@group1, object@group2))/segments$nC.valid
+
+        # calculate region statistics
+        ovrlp <- findOverlaps(unlist(object@stat), segments)
+        if (region.test == "fisher"){
+            segments$region.pval <- as.numeric(tapply(
+                unlist(object@stat)$pval[ovrlp@from],
+                ovrlp@to, .calcFisherPval))
+        } else if (region.test == "stouffer"){
+            # segments$region.pval <- as.numeric(by(
+            #   unlist(object@stat)[, c("mu", "pval")], ovrlp@to,
+            #   function(x) .calcStoufferPval(x$pval, x$mu)))
+            segments$region.pval <- as.numeric(tapply(
+                unlist(object@stat)$pval[ovrlp@from],
+                ovrlp@to, .calcStoufferPvalOneSided))
+        } else if (region.test == "weighted-variance"){
+            if (is.null(object@stat[[1]]$mu)){
+                stop(paste(
+                    "ERROR: weighted test not applicable,",
+                    "consider Stouffer's test or Fisher's test."))
+            }
+            segments$region.pval <- as.numeric(by(
+                unlist(object@stat)@elementMetadata[ovrlp@from, ], ovrlp@to,
+                function(x) .calcWeightedPval(x$mu, x$se, 1/x$se)))
+        } else if (region.test == "weighted-coverage"){
+            if (is.null(object@stat[[1]]$mu)){
+                stop(paste(
+                    "ERROR: weighted test not applicable,",
+                    "consider Stouffer's test or Fisher's test."))
+            }
+            segments$region.pval <- as.numeric(by(
+                unlist(object@stat)@elementMetadata[ovrlp@from, ], ovrlp@to,
+                function(x)
+                    .calcWeightedPval(x$mu, x$se, x$CovGroup1 + x$CovGroup2)))
+        }
+        methcp.object@segmentation <- segments
         return(methcp.object)
-      }
     }
-    if (object@test == "methylKit") {
-      object@stat <- GRangesList(lapply(names(object@stat), function(o){
-        tmp <- object@stat[[o]]
-        tmp$stat <- .pvalToStat(tmp$pval, tmp$methDiff)
-        tmp
-      }))
-    }
-    # calculate total coverage and methylated counts for each loci
-    object@stat <- GRangesList(lapply(1:length(object@stat), function(o){
-      tmp <- object@stat[[o]]
-      ovrlp <- findOverlaps(granges(bs.object), tmp)
-      tmp$CovGroup1 <- rowSums(
-        as.data.frame(getCoverage(bs.object)[ovrlp@from, object@group1]))
-      tmp$CovGroup2 <- rowSums(
-        as.data.frame(getCoverage(bs.object)[ovrlp@from, object@group2]))
-      tmp
-    }))
-    # segmentation
-    # segments <- mclapply(object@stat, function(o){
-    #   cp.object <- CNA(o$stat,
-    #                    chrom=as.vector(o@seqnames),
-    #                    maploc=start(o),
-    #                    data.type="logratio")
-    #   invisible(capture.output(segment.cp.object <- segment(
-    #     cp.object, verbose = 1, min.width = min.width, alpha = sig.level, ...)))
-    #   return(segment.cp.object$output)
-    # }, mc.cores = mc.cores)
-    # segments <- do.call("rbind", segments)
-    # segments$ID <- NULL
-    # segments$seg.mean <- NULL
-    # colnames(segments)[4] <- "nC.valid"
-    # segments <- GRanges(segments)
-    segments <- list()
-    for (chr in 1:length(object@stat)) {
-      o <- object@stat[[chr]]
-      pos <- start(o)
-      presegments <- split(1:length(pos), cumsum(c(TRUE, abs(diff(pos)) >= presegment_dist)))
-      res <- mclapply(presegments,
-                      function(idx){
-                        cp.object <- CNA(o[idx]$stat,
-                                         chrom=as.vector(o[idx]@seqnames),
-                                         maploc=start(o[idx]),
-                                         data.type="logratio")
-                        invisible(capture.output(segment.cp.object <- segment(
-                          cp.object, verbose = 1, min.width = min.width, alpha = sig.level, ...)))
-                        return(segment.cp.object$output)
-                      }, mc.cores = mc.cores)
-      res <- do.call("rbind", res)
-      res$ID <- NULL
-      res$seg.mean <- NULL
-      colnames(res)[4] <- "nC.valid"
-      segments[[chr]] <- res
-    }
-    segments <- as.data.frame(do.call("rbind", segments))
-    segments <- GRanges(segments)
-
-    # calculate region summary
-    ovrlp <- findOverlaps(granges(bs.object), segments)
-    segments$nC <- as.numeric(table(ovrlp@to))
-    M1 <- as.numeric(by(getCoverage(bs.object, type = "M")[
-      ovrlp@from, object@group1], ovrlp@to, sum))
-    M2 <- as.numeric(by(getCoverage(bs.object, type = "M")[
-      ovrlp@from, object@group2], ovrlp@to, sum))
-    Cov1 <- as.numeric(by(getCoverage(bs.object)[
-      ovrlp@from, object@group1], ovrlp@to, sum))
-    Cov2 <- as.numeric(by(getCoverage(bs.object)[
-      ovrlp@from, object@group2], ovrlp@to, sum))
-    segments$mean.diff <- M1/Cov1 - M2/Cov2
-    segments$mean.cov <- (Cov1 + Cov2)/length(c(object@group1, object@group2))/segments$nC.valid
-
-    # calculate region statistics
-    ovrlp <- findOverlaps(unlist(object@stat), segments)
-    if (region.test == "fisher"){
-      segments$region.pval <- as.numeric(tapply(
-        unlist(object@stat)$pval[ovrlp@from], ovrlp@to, .calcFisherPval))
-    } else if (region.test == "stouffer"){
-      # segments$region.pval <- as.numeric(by(
-      #   unlist(object@stat)[, c("mu", "pval")], ovrlp@to,
-      #   function(x) .calcStoufferPval(x$pval, x$mu)))
-      segments$region.pval <- as.numeric(tapply(
-        unlist(object@stat)$pval[ovrlp@from], ovrlp@to, .calcStoufferPvalOneSided))
-    } else if (region.test == "weighted-variance"){
-      if (is.null(object@stat[[1]]$mu)){
-        stop("ERROR: weighted test not applicable, consider Stouffer's test or Fisher's test.")
-      }
-      segments$region.pval <- as.numeric(by(
-        unlist(object@stat)@elementMetadata[ovrlp@from, ], ovrlp@to,
-        function(x) .calcWeightedPval(x$mu, x$se, 1/x$se)))
-    } else if (region.test == "weighted-coverage"){
-      if (is.null(object@stat[[1]]$mu)){
-        stop("ERROR: weighted test not applicable, consider Stouffer's test or Fisher's test.")
-      }
-      segments$region.pval <- as.numeric(by(
-        unlist(object@stat)@elementMetadata[ovrlp@from, ], ovrlp@to,
-        function(x) .calcWeightedPval(x$mu, x$se, x$CovGroup1 + x$CovGroup2)))
-    }
-    methcp.object@segmentation <- segments
-    return(methcp.object)
-  }
 )
 
 
 #' @title Obtain the significant DMRs.
+#'
+#' @usage
+#' getSigRegion(
+#'     object, sig.level = 0.01, mean.coverage = 1,
+#'     mean.diff = 0.1, nC.valid = 10)
 #'
 #' @description
 #' \code{getSigRegion} returns the significant DMRs giving the segmented
@@ -393,53 +476,65 @@ setMethod(
 #' # with probability 0.3.
 #' nC <- 2000
 #' sim_cov <- rnbinom(6*nC, 5, 0.5) + 5
-#' sim_M <- sapply(sim_cov, function(x) rbinom(1, x, 0.3))
+#' sim_M <- vapply(
+#'     sim_cov, function(x) rbinom(1, x, 0.3), FUN.VALUE = numeric(1))
 #' sim_cov <- matrix(sim_cov, ncol = 6)
 #' sim_M <- matrix(sim_M, ncol = 6)
 #' # methylation ratios in the DMRs in the treatment group are
 #' # generated using Binomial(0.7)
 #' DMRs <- c(600:622, 1089:1103, 1698:1750)
-#' sim_M[DMRs, 1:3] <- sapply(sim_cov[DMRs, 1:3],
-#'                            function(x) rbinom(1, x, 0.7))
+#' sim_M[DMRs, 1:3] <- vapply(
+#'     sim_cov[DMRs, 1:3], function(x) rbinom(1, x, 0.7),
+#'     FUN.VALUE = numeric(1))
 #' # sample names
 #' sample_names <- c(paste0("treatment", 1:3), paste0("control", 1:3))
 #' colnames(sim_cov) <- sample_names
 #' colnames(sim_M) <- sample_names
 #'
 #' # create a bs.object
-#' bs_object <- BSseq(gr = GRanges(seqnames = "Chr01",
-#'                                 IRanges(start = (1:nC)*10,
-#'                                         width = 1)),
-#'                    Cov = sim_cov, M = sim_M, sampleNames = sample_names)
+#' bs_object <- BSseq(gr = GRanges(
+#'     seqnames = "Chr01",
+#'     IRanges(start = (1:nC)*10, width = 1)),
+#'     Cov = sim_cov, M = sim_M, sampleNames = sample_names)
 #' DMRs_pos <- DMRs*10
-#' methcp_obj1 <- calcLociStat(bs_object,
-#'                             group1 = paste0("treatment", 1:3),
-#'                             group2 = paste0("control", 1:3),
-#'                             test = "DSS")
-#' methcp_obj1 <- segmentMethCP(methcp_obj1, bs_object,
-#'                              region.test = "weighted-coverage",
-#'                              mc.cores = 1)
+#' methcp_obj1 <- calcLociStat(
+#'     bs_object,
+#'     group1 = paste0("treatment", 1:3),
+#'     group2 = paste0("control", 1:3),
+#'     test = "DSS")
+#' methcp_obj1 <- segmentMethCP(
+#'     methcp_obj1, bs_object,
+#'     region.test = "weighted-coverage",
+#'     mc.cores = 1)
 #' methcp_res1 <- getSigRegion(methcp_obj1)
 #'
-#' @export
-setGeneric("getSigRegion",
-           function(object, sig.level = 0.01, mean.coverage = 1,
-                    mean.diff = 0.1, nC.valid = 10)
-             standardGeneric("getSigRegion"))
+#' @name getSigRegion
+#' @rdname getSigRegion-methods
+#' @exportMethod getSigRegion
+setGeneric(
+    "getSigRegion",
+    function(
+        object, sig.level = 0.01, mean.coverage = 1,
+        mean.diff = 0.1, nC.valid = 10)
+        standardGeneric("getSigRegion"))
+#' @rdname getSigRegion-methods
+#' @aliases getSigRegion,MethCP-method
 setMethod(
-  "getSigRegion", "MethCP",
-  function(object, sig.level = 0.01, mean.coverage = 1,
-           mean.diff = 0.1, nC.valid = 10){
-
-    if (!is(object, "MethCP")){
-      stop("ERROR: Input must be an object of class \"MethCP\".")
-    }
-    res <- as.data.frame(object@segmentation)
-    res$strand <- NULL
-    res$width <- NULL
-    res <- res[res$region.pval <= sig.level & res$mean.cov >= mean.coverage &
-                 abs(res$mean.diff) >= mean.diff & res$nC.valid >= nC.valid, ]
-    res$mean.diff <- round(res$mean.diff, 4)
-    res$mean.cov <- round(res$mean.cov, 4)
-    return(res)
-  })
+    "getSigRegion", "MethCP",
+    function(
+        object, sig.level = 0.01, mean.coverage = 1,
+        mean.diff = 0.1, nC.valid = 10)
+    {
+        if (!is(object, "MethCP")){
+            stop("ERROR: Input must be an object of class \"MethCP\".")
+        }
+        res <- as.data.frame(object@segmentation)
+        res$strand <- NULL
+        res$width <- NULL
+        res <- res[
+            res$region.pval <= sig.level & res$mean.cov >= mean.coverage &
+                abs(res$mean.diff) >= mean.diff & res$nC.valid >= nC.valid, ]
+        res$mean.diff <- round(res$mean.diff, 4)
+        res$mean.cov <- round(res$mean.cov, 4)
+        return(res)
+    })

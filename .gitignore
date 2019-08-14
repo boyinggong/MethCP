@@ -4,3 +4,6 @@
 .Ruserdata
 .html
 inst/doc/methcp_cache/*
+doc
+Meta
+.DS_Store

@@ -1,0 +1,249 @@
+---
+title: "methcp: User’s Guide"
+author: "Boying Gong"
+date: "`r Sys.Date()`"
+vignette: >
+    %\VignetteIndexEntry{methcp: User’s Guide}
+    %\VignetteEngine{knitr::rmarkdown}
+    \usepackage[utf8]{inputenc}
+output: 
+    BiocStyle::html_document:
+        toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+# Introduction
+
+`methcp` is a differentially methylated region 
+(DMR) detecting method for whole-genome bisulfite sequencing (WGBS) 
+data. It is applicable for a wide range of experimental designs.
+In this document, we provide examples for two-group comparisons and 
+time-course analysis.  
+
+`methcp` identifies DMRs based on change point detection, which 
+naturally segments the genome and provides region-level 
+differential analysis. We direct the interested reader to our paper
+[here](https://link.springer.com/chapter/10.1007/978-3-030-17083-7_5)
+
+Load packages. 
+
+```{r, message=FALSE}
+library(bsseq)
+library(methcp)
+```
+
+# Two-group comparison
+
+In this section, we use the CpG methylation data from an Arabidopsis dataset 
+available from GEO with accession number
+[GSM954584](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM954584). We 
+take a subset of chromosome 1 and 2 from each of the samples and perform 
+differential analysis between the wild-type plants and the H2A.Z mutant 
+plants, which we refer to as `treatment` and `control` in the rest of 
+the document. 
+
+## Read data
+
+We use a well-developed Bioconductor package `bsseq` to load the store the raw 
+data. Below is an example of how to read raw counts using `bsseq`. For more 
+operations regarding the `bsseq` object, please refer to their 
+[User's Guide](http://bioconductor.org/packages/release/bioc/html/bsseq.html). 
+
+```{r readData}
+sample_names <- c(paste0("control", 1:3), paste0("treatment", 1:3))
+n_sample <- length(sample_names)
+
+raw_files <- system.file(
+    "extdata", paste0(sample_names, ".txt"), package = "methcp")
+
+bs_object_list <- list()
+for (i in 1:n_sample) {
+    dt <- read.table(raw_files[i], stringsAsFactors = FALSE, header = TRUE)
+    bs_object_list[[i]] <- BSseq(
+        chr = dt$Chr, pos = dt$Pos, M = as.matrix(dt$M), 
+        Cov = as.matrix(dt$Cov), sampleNames = sample_names[i])
+}
+
+bs_object <- do.call("combine", c(bs_object_list))
+```
+
+The `bsseq` object.
+
+```{r showBSobject}
+bs_object
+```
+
+Header of the raw file for one of the samples.
+
+```{r}
+head(dt)
+```
+
+## Calculate the statistics
+
+We calculate the per-cytosine statistics using two different test `DSS` and 
+`methylKit` using the function `calcLociStat`. This function returns a 
+`MethCP` object that is used for the future segmentation step. We allow 
+parallelized computing when there are multiple chromosomes in the dataset. 
+Note that the number of cores used as indicated in the parameter `mc.cores` 
+should not exceeds the number of chromosomes in the dataset.
+
+```{r calcStat}
+group1 <- paste0("control", 1:3)
+group2 <- paste0("treatment", 1:3)
+
+obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS", mc.cores = 1)
+obj_methylKit <- calcLociStat(
+    bs_object, group1, group2, test = "methylKit", mc.cores = 1)
+```
+
+```{r obj_DSS}
+obj_DSS
+```
+
+```{r obj_methylKit}
+obj_methylKit
+```
+
+In cases of experiments other than two-group comparison, we use the calculated 
+statistics and create a `MethCP` object.
+
+```{r createmethcp}
+obj <- methcpFromStat(
+    chr = c("Chr01", "Chr01", "Chr02", "Chr02"), 
+    pos = c(12, 109, 42, 78), 
+    pvals = c(0, 0.5, 0.13, 0.01), 
+    effect.size = c(0.76, -0.2, 0.31, 0.66), 
+    testName = "UserDefinedTest")
+```
+
+```{r}
+obj
+```
+
+## Segmentation
+
+`segmentMethCP` performs segmentation on a `MethCP` object. We allow 
+parallelized computing when there are multiple chromosomes in the dataset. 
+Different from `calcLociStat` function in the previous section, we do not put 
+any constraint on the number of cores used. Please see the documentation for 
+adjusting the parameters used in the segmentation.
+
+```{r segmentation}
+obj_DSS <- segmentMethCP(
+    obj_DSS, bs_object, region.test = "weighted-coverage", 
+    mc.cores = 1)
+obj_methylKit <- segmentMethCP(
+    obj_methylKit, bs_object, region.test = "fisher", mc.cores = 1)
+```
+
+```{r}
+obj_DSS
+```
+
+```{r}
+obj_methylKit
+```
+
+## Significant regions
+
+Use function `getSigRegion` on a `MethCP` object to get the list of DMRs.
+
+```{r}
+region_DSS <- getSigRegion(obj_DSS)
+head(region_DSS)
+```
+
+```{r}
+region_methylKit <- getSigRegion(obj_methylKit)
+head(region_methylKit)
+```
+
+# A time-course example
+
+MethCP is flexible for a wide variety of experimental designs. We apply MethCP 
+on an Arabidopsis thaliana seed germination dataset available from the GEO 
+with accession number 
+[https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE94712](GSE94712) 
+The data is generated from two replicates of dry seed and germinating seeds of 
+wild-type plants (Col-0) and ros1 dml2 dml3 (rdd) triple demethylase mutant 
+plants at 0-4 days after imbibition for 4 days (DAI). For cytosine-based 
+statistics, we fit linear models on the methylation ratios and test the 
+differences between the time coefficient of Col-0 and rdd.
+
+Read the meta data.
+
+```{r}
+meta_file <- system.file(
+    "extdata", "meta_data.txt", package = "methcp")
+meta <- read.table(meta_file, sep = "\t", header = TRUE)
+```
+
+Read the counts data.
+
+```{r}
+raw_files <- system.file(
+    "extdata", paste0(meta$SampleName, ".tsv"), package = "methcp")
+
+bs_object_list <- list()
+for (i in 1:length(raw_files)){
+    dt <- read.table(raw_files[i], stringsAsFactors = FALSE, header = TRUE)
+    bs_object_list[[i]] <- BSseq(
+        chr = dt$chr,
+        pos = dt$pos,
+        M = as.matrix(dt$M),
+        Cov = as.matrix(dt$Cov),
+        sampleNames = meta$SampleName[i])
+}
+
+bs_object <- do.call("combine", c(bs_object_list))
+bs_object
+```
+
+Apply coverage filter.
+
+```{r}
+groups <- split(1:nrow(meta), meta$Condition)
+coverages <- as.data.frame(getCoverage(bs_object, type = "Cov"))
+filter <- rowSums(coverages[, meta$SampleName[groups[[1]]]] != 0) >= 3 &
+    rowSums(coverages[, meta$SampleName[groups[[2]]]] != 0) >= 3
+bs_object <- bs_object[filter, ]
+```
+
+Calculate the statistics. A dataframe of the meta data will be passed to 
+function `calcLociStatTimeCourse`. Note that there must be columns named 
+`Condition`, `Time` and `SampleName` in the dataframe.
+
+```{r}
+obj <- calcLociStatTimeCourse(bs_object, meta)
+```
+
+```{r}
+obj
+```
+
+Segmentation.
+
+```{r}
+obj <- segmentMethCP(obj, bs_object, region.test = "stouffer", mc.cores = 1)
+```
+
+Get the DMRs.
+
+```{r}
+regions <- getSigRegion(obj)
+```
+
+```{r}
+head(regions)
+```
+
+
+# Session info
+
+```{r}
+sessionInfo() 
+```
