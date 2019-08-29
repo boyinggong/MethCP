@@ -12,7 +12,7 @@ install_github("boyinggong/methcp", dependencies=TRUE,
   repos=BiocInstaller::biocinstallRepos())
 ```
 
-A tutorial can be found [here](https://boyinggong.github.io/methcp/inst/doc/methcp.html).
+A tutorial can be found [here](https://boyinggong.github.io/methcp/index.html).
 
 Status Checks: [![Build Status](https://travis-ci.org/boyinggong/methcp.svg?branch=master)](https://travis-ci.org/boyinggong/methcp)
 
