@@ -48,26 +48,31 @@ the document.
 ## Read data
 
 We use a well-developed Bioconductor package `bsseq` to load the store the raw 
-data. Below is an example of how to read raw counts using `bsseq`. For more 
-operations regarding the `bsseq` object, please refer to their 
+data. Below is an example of how to read raw counts using `bsseq`. 
+
+We provide a helper function `createBsseqObject` to create a bsseq object
+when the data for each sample is stored in a separate text file. 
+
+For more operations regarding the `bsseq` object, or to create a `bsseq` 
+object customized to your file format, please refer to their 
 [User's Guide](http://bioconductor.org/packages/release/bioc/html/bsseq.html). 
 
 ```{r readData}
-sample_names <- c(paste0("control", 1:3), paste0("treatment", 1:3))
-n_sample <- length(sample_names)
+# The dataset is consist of 6 samples. 3 samples are H2A.Z mutant 
+# plants, and 3 samples are controls.
+sample_names <- c(
+    paste0("control", seq_len(3)), 
+    paste0("treatment", seq_len(3))
+)
 
+# Get the vector of file path and names 
 raw_files <- system.file(
     "extdata", paste0(sample_names, ".txt"), package = "methcp")
 
-bs_object_list <- list()
-for (i in 1:n_sample) {
-    dt <- read.table(raw_files[i], stringsAsFactors = FALSE, header = TRUE)
-    bs_object_list[[i]] <- BSseq(
-        chr = dt$Chr, pos = dt$Pos, M = as.matrix(dt$M), 
-        Cov = as.matrix(dt$Cov), sampleNames = sample_names[i])
-}
-
-bs_object <- do.call("combine", c(bs_object_list))
+# load the data
+bs_object <- createBsseqObject(
+    dir = '', files = raw_files, sample_names = sample_names, 
+    chr_col = 'Chr', pos_col = 'Pos', m_col = "M", cov_col = 'Cov')
 ```
 
 The `bsseq` object.
@@ -79,6 +84,8 @@ bs_object
 Header of the raw file for one of the samples.
 
 ```{r}
+dt <- read.table(
+            raw_files[1], stringsAsFactors = FALSE, header = TRUE)
 head(dt)
 ```
 
@@ -92,9 +99,14 @@ Note that the number of cores used as indicated in the parameter `mc.cores`
 should not exceeds the number of chromosomes in the dataset.
 
 ```{r calcStat}
-group1 <- paste0("control", 1:3)
-group2 <- paste0("treatment", 1:3)
+# the sample names of the two groups to compare. They should be subsets of the 
+# sample names provided when creating the `bsseq` objects.
+group1 <- paste0("control", seq_len(3))
+group2 <- paste0("treatment", seq_len(3))
 
+# Below we calculate the per-cytosine statistics using two different 
+# test `DSS` and `methylKit`. The users may pick one of the two for their
+#  application.
 obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS", mc.cores = 1)
 obj_methylKit <- calcLociStat(
     bs_object, group1, group2, test = "methylKit", mc.cores = 1)
@@ -108,8 +120,9 @@ obj_DSS
 obj_methylKit
 ```
 
-In cases of experiments other than two-group comparison, we use the calculated 
-statistics and create a `MethCP` object.
+In cases the user wants to use their pre-calculated test statistics for 
+experiments other than two-group comparison and time course data, we use the 
+calculated statistics and create a `MethCP` object.
 
 ```{r createmethcp}
 obj <- methcpFromStat(
@@ -136,6 +149,7 @@ adjusting the parameters used in the segmentation.
 obj_DSS <- segmentMethCP(
     obj_DSS, bs_object, region.test = "weighted-coverage", 
     mc.cores = 1)
+
 obj_methylKit <- segmentMethCP(
     obj_methylKit, bs_object, region.test = "fisher", mc.cores = 1)
 ```
@@ -172,7 +186,7 @@ The data is generated from two replicates of dry seed and germinating seeds of
 wild-type plants (Col-0) and ros1 dml2 dml3 (rdd) triple demethylase mutant 
 plants at 0-4 days after imbibition for 4 days (DAI). For cytosine-based 
 statistics, we fit linear models on the methylation ratios and test the 
-differences between the time coefficient of Col-0 and rdd.
+differences between the time coefficient of condition Col-0 and condition rdd.
 
 Read the meta data.
 
@@ -180,33 +194,28 @@ Read the meta data.
 meta_file <- system.file(
     "extdata", "meta_data.txt", package = "methcp")
 meta <- read.table(meta_file, sep = "\t", header = TRUE)
+
+head(meta)
 ```
 
 Read the counts data.
 
 ```{r}
+# Get the vector of file path and names 
 raw_files <- system.file(
     "extdata", paste0(meta$SampleName, ".tsv"), package = "methcp")
 
-bs_object_list <- list()
-for (i in 1:length(raw_files)){
-    dt <- read.table(raw_files[i], stringsAsFactors = FALSE, header = TRUE)
-    bs_object_list[[i]] <- BSseq(
-        chr = dt$chr,
-        pos = dt$pos,
-        M = as.matrix(dt$M),
-        Cov = as.matrix(dt$Cov),
-        sampleNames = meta$SampleName[i])
-}
-
-bs_object <- do.call("combine", c(bs_object_list))
-bs_object
+# read files
+bs_object <- createBsseqObject(
+    dir = '', files = raw_files, sample_names = meta$SampleName, 
+    chr_col = 1, pos_col = 2, m_col = 4, cov_col = 5, header = TRUE)
 ```
 
-Apply coverage filter.
+Apply coverage filter to make sure each loci has total coverage (summed across 
+samples) more than 3 for each condition.
 
 ```{r}
-groups <- split(1:nrow(meta), meta$Condition)
+groups <- split(seq_len(nrow(meta)), meta$Condition)
 coverages <- as.data.frame(getCoverage(bs_object, type = "Cov"))
 filter <- rowSums(coverages[, meta$SampleName[groups[[1]]]] != 0) >= 3 &
     rowSums(coverages[, meta$SampleName[groups[[2]]]] != 0) >= 3
