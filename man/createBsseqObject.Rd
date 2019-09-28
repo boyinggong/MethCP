@@ -5,13 +5,11 @@
 \title{Helper function to read text files and create a bsseq object.}
 \usage{
 createBsseqObject(
-    dir, files, sample_names, 
+    files, sample_names, 
     chr_col, pos_col, m_col, cov_col, header = TRUE)
 }
 \arguments{
-\item{dir}{charactor of file directory.}
-
-\item{files}{a charactor vector of file names.}
+\item{files}{a charactor vector of file names with full path to the file.}
 
 \item{sample_names}{a charactor vector of sample names. It should have the
 same length as files vector.}
@@ -49,7 +47,7 @@ raw_files <- system.file(
 
 # load the data
 bs_object <- createBsseqObject(
-    dir = '', files = raw_files, sample_names = sample_names, 
+    files = raw_files, sample_names = sample_names, 
     chr_col = 'Chr', pos_col = 'Pos', m_col = "M", cov_col = 'Cov')
 
 }
