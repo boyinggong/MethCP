@@ -2,15 +2,13 @@
 #'
 #' @usage
 #' createBsseqObject(
-#'     dir, files, sample_names, 
+#'     files, sample_names, 
 #'     chr_col, pos_col, m_col, cov_col, header = TRUE)
 #'
 #' @description Create a bsseq object when the data for each sample is 
 #' stored in a separate text file. 
 #'
-#' 
-#' @param dir charactor of file directory.
-#' @param files a charactor vector of file names.
+#' @param files a charactor vector of file names with full path to the file.
 #' @param sample_names a charactor vector of sample names. It should have the
 #' same length as files vector.
 #' @param chr_col name or index of the chromosome column in data files.
@@ -37,7 +35,7 @@
 #' 
 #' # load the data
 #' bs_object <- createBsseqObject(
-#'     dir = '', files = raw_files, sample_names = sample_names, 
+#'     files = raw_files, sample_names = sample_names, 
 #'     chr_col = 'Chr', pos_col = 'Pos', m_col = "M", cov_col = 'Cov')
 #' 
 #' @importFrom bsseq BSseq combine
@@ -46,9 +44,8 @@
 #'
 #' @export
 createBsseqObject <- function(
-    dir, files, sample_names, chr_col, pos_col, m_col, cov_col, header = TRUE)
+    files, sample_names, chr_col, pos_col, m_col, cov_col, header = TRUE)
 {
-    files = file.path(dir, files)
     n_sample <- length(sample_names)
     bs_object_list <- list()
     for (i in seq_len(n_sample)) {
