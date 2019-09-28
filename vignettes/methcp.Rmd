@@ -71,7 +71,7 @@ raw_files <- system.file(
 
 # load the data
 bs_object <- createBsseqObject(
-    dir = '', files = raw_files, sample_names = sample_names, 
+    files = raw_files, sample_names = sample_names, 
     chr_col = 'Chr', pos_col = 'Pos', m_col = "M", cov_col = 'Cov')
 ```
 
@@ -207,7 +207,7 @@ raw_files <- system.file(
 
 # read files
 bs_object <- createBsseqObject(
-    dir = '', files = raw_files, sample_names = meta$SampleName, 
+    files = raw_files, sample_names = meta$SampleName, 
     chr_col = 1, pos_col = 2, m_col = 4, cov_col = 5, header = TRUE)
 ```
 
