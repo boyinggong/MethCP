@@ -10,7 +10,7 @@ calcLociStatTimeCourse(
 \arguments{
 \item{bs.object}{a \code{BSseq} object from the \code{bsseq} package.}
 
-\item{meta}{a \code{data.frame}.}
+\item{meta}{a \code{data.frame}. See details.}
 
 \item{force.slope}{if \code{TRUE}, we force the slope in the linear
 model to be the same between two conditions. Otherwise, the slopes are

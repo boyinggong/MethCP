@@ -20,7 +20,7 @@
 #' model.
 #'
 #' @param bs.object a \code{BSseq} object from the \code{bsseq} package.
-#' @param meta a \code{data.frame}.
+#' @param meta a \code{data.frame}. See details.
 #' @param force.slope if \code{TRUE}, we force the slope in the linear
 #' model to be the same between two conditions. Otherwise, the slopes are
 #' fitted separately but not tested.

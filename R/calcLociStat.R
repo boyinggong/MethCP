@@ -93,16 +93,16 @@ calcLociStat <- function(
 
     if (!is(bs.object, "BSseq")){
         stop(paste0(
-            "ERROR: Input must be an object of class",
+            "Input must be an object of class",
             "\"BSseq\" from bsseq package."))
     }
     if (!all(c(group1, group2) %in% sampleNames(bs.object))){
         stop(paste0(
-            "ERROR: Group sample names must be a subset of",
+            "Group sample names must be a subset of",
             "`sampleNames(bs.object)`."))
     }
     if(!(test %in% c("DSS", "methylKit"))){
-        stop("ERROR: Test type is not supported.")
+        stop("Test type is not supported.")
     }
     object_list <- list()
     for (chr in unique(seqnames(bs.object))){
