@@ -2,7 +2,7 @@ Package: methcp
 Type: Package
 Title: Differential methylation anlsysis for bisulfite
         sequencing data
-Version: 0.99.4
+Version: 0.99.6
 Author: Boying Gong
 Maintainer: Boying Gong <jorothy_gong@berkeley.edu>
 Description: methcp is a differentially methylated region 
