@@ -32,7 +32,7 @@ Load packages.
 
 ```{r, message=FALSE}
 library(bsseq)
-library(methcp)
+library(MethCP)
 ```
 
 # Two-group comparison
@@ -67,7 +67,7 @@ sample_names <- c(
 
 # Get the vector of file path and names 
 raw_files <- system.file(
-    "extdata", paste0(sample_names, ".txt"), package = "methcp")
+    "extdata", paste0(sample_names, ".txt"), package = "MethCP")
 
 # load the data
 bs_object <- createBsseqObject(
@@ -125,12 +125,18 @@ experiments other than two-group comparison and time course data, we use the
 calculated statistics and create a `MethCP` object.
 
 ```{r createmethcp}
-obj <- methcpFromStat(
-    chr = c("Chr01", "Chr01", "Chr02", "Chr02"), 
-    pos = c(12, 109, 42, 78), 
-    pvals = c(0, 0.5, 0.13, 0.01), 
-    effect.size = c(0.76, -0.2, 0.31, 0.66), 
-    testName = "UserDefinedTest")
+data <- data.frame(
+    chr = rep("Chr01", 5),
+    pos = c(2, 5, 9, 10, 18),
+    effect.size = c(1,-1, NA, 9, Inf),
+    pvals = c(0, 0.1, 0.9, NA, 0.02))
+obj <- MethCPFromStat(
+    data, test.name="myTest",
+    pvals.field = "pvals",
+    effect.size.field="effect.size",
+    seqnames.field="chr",
+    pos.field="pos"
+)
 ```
 
 ```{r}
@@ -192,7 +198,7 @@ Read the meta data.
 
 ```{r}
 meta_file <- system.file(
-    "extdata", "meta_data.txt", package = "methcp")
+    "extdata", "meta_data.txt", package = "MethCP")
 meta <- read.table(meta_file, sep = "\t", header = TRUE)
 
 head(meta)
@@ -203,7 +209,7 @@ Read the counts data.
 ```{r}
 # Get the vector of file path and names 
 raw_files <- system.file(
-    "extdata", paste0(meta$SampleName, ".tsv"), package = "methcp")
+    "extdata", paste0(meta$SampleName, ".tsv"), package = "MethCP")
 
 # read files
 bs_object <- createBsseqObject(

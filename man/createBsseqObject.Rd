@@ -43,7 +43,7 @@ sample_names <- c(
 
 # Get the vector of file path and names 
 raw_files <- system.file(
-    "extdata", paste0(sample_names, ".txt"), package = "methcp")
+    "extdata", paste0(sample_names, ".txt"), package = "MethCP")
 
 # load the data
 bs_object <- createBsseqObject(

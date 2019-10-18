@@ -1,4 +1,4 @@
 library(testthat)
-library(methcp)
+library(MethCP)
 
-test_check("methcp")
+test_check("MethCP")
