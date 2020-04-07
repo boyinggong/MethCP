@@ -94,9 +94,7 @@ head(dt)
 We calculate the per-cytosine statistics using two different test `DSS` and 
 `methylKit` using the function `calcLociStat`. This function returns a 
 `MethCP` object that is used for the future segmentation step. We allow 
-parallelized computing when there are multiple chromosomes in the dataset. 
-Note that the number of cores used as indicated in the parameter `mc.cores` 
-should not exceeds the number of chromosomes in the dataset.
+parallelized computing when there are multiple chromosomes in the dataset.
 
 ```{r calcStat}
 # the sample names of the two groups to compare. They should be subsets of the 
@@ -107,9 +105,9 @@ group2 <- paste0("treatment", seq_len(3))
 # Below we calculate the per-cytosine statistics using two different 
 # test `DSS` and `methylKit`. The users may pick one of the two for their
 #  application.
-obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS", mc.cores = 1)
+obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS")
 obj_methylKit <- calcLociStat(
-    bs_object, group1, group2, test = "methylKit", mc.cores = 1)
+    bs_object, group1, group2, test = "methylKit")
 ```
 
 ```{r obj_DSS}
@@ -153,11 +151,10 @@ adjusting the parameters used in the segmentation.
 
 ```{r segmentation}
 obj_DSS <- segmentMethCP(
-    obj_DSS, bs_object, region.test = "weighted-coverage", 
-    mc.cores = 1)
+    obj_DSS, bs_object, region.test = "weighted-coverage")
 
 obj_methylKit <- segmentMethCP(
-    obj_methylKit, bs_object, region.test = "fisher", mc.cores = 1)
+    obj_methylKit, bs_object, region.test = "fisher")
 ```
 
 ```{r}
@@ -243,7 +240,7 @@ obj
 Segmentation.
 
 ```{r}
-obj <- segmentMethCP(obj, bs_object, region.test = "stouffer", mc.cores = 1)
+obj <- segmentMethCP(obj, bs_object, region.test = "stouffer")
 ```
 
 Get the DMRs.

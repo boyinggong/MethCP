@@ -28,7 +28,6 @@
 #' control group.
 #' @param test a character string containing the names of the test to be
 #' performed per cytosine.
-#' @param mc.cores number of cores used for the parallelization.
 #'
 #' @return a \code{MethCP} object that is not segmented.
 #'
@@ -83,13 +82,13 @@
 #' @importFrom bsseq sampleNames
 #' @importFrom GenomeInfoDb sortSeqlevels
 #' @import GenomicRanges
-#' @import parallel
+#' @importFrom BiocParallel bplapply MulticoreParam
 #' @importFrom utils capture.output
 #'
 #' @export
 calcLociStat <- function(
     bs.object, group1, group2,
-    test = c("DSS", "methylKit"), mc.cores = 1){
+    test = c("DSS", "methylKit")){
 
     if (!is(bs.object, "BSseq")){
         stop(paste0(
@@ -109,7 +108,8 @@ calcLociStat <- function(
         object_list[[chr]] <- bs.object[seqnames(bs.object) == chr]
     }
     if(test == "DSS"){
-        stat <- GenomicRanges::GRangesList(mclapply(object_list, function(o){
+        stat <- GenomicRanges::GRangesList(
+            BiocParallel::bplapply(object_list, function(o){
             invisible(capture.output(tmp <- DMLtest(
                 o, group1, group2, equal.disp = FALSE, smoothing = FALSE)))
             GRanges(
@@ -119,10 +119,11 @@ calcLociStat <- function(
                 se = tmp$diff.se,
                 stat = tmp$stat,
                 pval = tmp$pval)
-        }, mc.cores = mc.cores))
+        }, BPPARAM=BiocParallel::MulticoreParam()))
     } else if(test == "methylKit"){
         nsample <- length(group1) + length(group2)
-        stat <- GenomicRanges::GRangesList(mclapply(object_list, function(o){
+        stat <- GenomicRanges::GRangesList(
+            BiocParallel::bplapply(object_list, function(o){
             df <- cbind(
                 as.data.frame(granges(o)),
                 getCoverage(o, type = "Cov")[, c(group1, group2)],
@@ -177,7 +178,7 @@ calcLociStat <- function(
                 gr <- sort(gr)
             }
             return(gr)
-        }, mc.cores = mc.cores))
+        }, BPPARAM=BiocParallel::MulticoreParam()))
     }
     methcpObj <- new(
         "MethCP",

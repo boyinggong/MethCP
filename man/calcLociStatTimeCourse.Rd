@@ -15,8 +15,6 @@ calcLociStatTimeCourse(
 \item{force.slope}{if \code{TRUE}, we force the slope in the linear
 model to be the same between two conditions. Otherwise, the slopes are
 fitted separately but not tested.}
-
-\item{mc.cores}{number of cores used for the parallelization.}
 }
 \value{
 A \code{MethCP} object that is not segmented.

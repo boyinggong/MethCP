@@ -5,8 +5,15 @@
 \alias{MethCP}
 \title{Class \code{MethCP}}
 \usage{
-MethCP(test = NA_character_, group1 = NA, group2 = NA, chr, pos,
-    pvals, effect.size)
+MethCP(
+  test = NA_character_,
+  group1 = NA,
+  group2 = NA,
+  chr,
+  pos,
+  pvals,
+  effect.size
+)
 
 MethCP(
     test = NA_character_, group1 = NA, group2 = NA, chr, pos,

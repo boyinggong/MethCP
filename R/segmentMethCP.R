@@ -5,7 +5,7 @@
 #'     methcp.object, bs.object,
 #'     region.test = c(
 #'         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
-#'     mc.cores = 1, min.width = 2, sig.level = 0.01,
+#'     min.width = 2, sig.level = 0.01,
 #'     presegment_dist = 600, ...)
 #'
 #' @description Perform CBS algorithm that segments the genome into
@@ -30,7 +30,6 @@
 #' @param bs.object a \code{BSseq} object from the \code{bsseq} package.
 #' @param region.test The meta-analysis method used to create region-based
 #' test statistics.
-#' @param mc.cores number of cores used for the parallelization.
 #' @param min.width the minimum width for the segments, which is used as
 #' termination rule for the segmentation algorithm.
 #' @param sig.level the significance level of the segments, which is used as
@@ -77,12 +76,12 @@
 #'     test = "DSS")
 #' methcp_obj1 <- segmentMethCP(
 #'     methcp_obj1, bs_object,
-#'     region.test = "weighted-coverage",
-#'     mc.cores = 1)
+#'     region.test = "weighted-coverage")
 #'
 #' @import parallel
 #' @importFrom DNAcopy CNA segment
 #' @importFrom bsseq getCoverage
+#' @importFrom BiocParallel bplapply MulticoreParam
 #'
 #' @export
 #' @aliases segmentMethCP
@@ -90,7 +89,7 @@ segmentMethCP <- function(
     methcp.object, bs.object,
     region.test = c(
         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
-    mc.cores = 1, min.width = 2, sig.level = 0.01,
+    min.width = 2, sig.level = 0.01,
     presegment_dist = 600, ...)
 {
     object <- methcp.object
@@ -141,7 +140,7 @@ segmentMethCP <- function(
         presegments <- split(
             seq_len(length(pos)),
             cumsum(c(TRUE, abs(diff(pos)) >= presegment_dist)))
-        res <- mclapply(
+        res <- BiocParallel::bplapply(
             presegments,
             function(idx){
                 cp.object <- CNA(
@@ -153,7 +152,7 @@ segmentMethCP <- function(
                     cp.object, verbose = 1, min.width = min.width,
                     alpha = sig.level, ...)))
                 return(segment.cp.object$output)
-            }, mc.cores = mc.cores)
+            }, BPPARAM=BiocParallel::MulticoreParam())
         res <- do.call("rbind", res)
         res$ID <- NULL
         res$seg.mean <- NULL

@@ -3,7 +3,7 @@
 #'
 #' @usage
 #' calcLociStatTimeCourse(
-#'     bs.object, meta, force.slope = FALSE, mc.cores = 1)
+#'     bs.object, meta, force.slope = FALSE)
 #'
 #' @description
 #' For each cytosine, \code{calcLociStatTimeCourse} fits a linear model
@@ -24,7 +24,6 @@
 #' @param force.slope if \code{TRUE}, we force the slope in the linear
 #' model to be the same between two conditions. Otherwise, the slopes are
 #' fitted separately but not tested.
-#' @param mc.cores number of cores used for the parallelization.
 #'
 #' @return A \code{MethCP} object that is not segmented.
 #'
@@ -70,12 +69,11 @@
 #' obj_ts <- calcLociStatTimeCourse(bs_object_ts, meta)
 #' obj_ts
 #'
-#' @import parallel
+#' @importFrom BiocParallel bplapply MulticoreParam
 #'
 #' @export
 calcLociStatTimeCourse <- function(
-    bs.object, meta, force.slope = FALSE,
-    mc.cores = 1){
+    bs.object, meta, force.slope = FALSE){
 
     if (!is(bs.object, "BSseq")){
         stop(paste0(
@@ -92,7 +90,7 @@ calcLociStatTimeCourse <- function(
         bs.object, type = "Cov"))[, meta$SampleName]
     M <- as.data.frame(getCoverage(bs.object, type = "M"))[, meta$SampleName]
     ratios <- .asinTransform(M/coverage)
-    res <- mclapply(seq_len(nrow(coverage)), function(i){
+    res <- BiocParallel::bplapply(seq_len(nrow(coverage)), function(i){
         suppressWarnings({
             data <- meta
             data$r <- t(ratios[i, ])[, 1]
@@ -108,7 +106,7 @@ calcLociStatTimeCourse <- function(
                     weights=cov))$coefficients[4, 3:4]
             }
         })
-    }, mc.cores = mc.cores)
+    }, BPPARAM=BiocParallel::MulticoreParam())
     res <- do.call("rbind", res)
     stat <- granges(bs.object)
     stat$stat <- qnorm(1-res[, 2]/2)*sign(res[, 1])

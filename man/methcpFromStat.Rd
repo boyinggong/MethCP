@@ -4,10 +4,15 @@
 \alias{MethCPFromStat}
 \title{Create a \code{MethCP} object given the per-cytosine based tests.}
 \usage{
-MethCPFromStat(data, test.name, pvals.field = "pvals",
-    effect.size.field = "effect.size", seqnames.field = c("seqnames",
-    "seqname", "chromosome", "chrom", "chr", "chromosome_name", "seqid"),
-    pos.field = "pos")
+MethCPFromStat(
+  data,
+  test.name,
+  pvals.field = "pvals",
+  effect.size.field = "effect.size",
+  seqnames.field = c("seqnames", "seqname", "chromosome", "chrom", "chr",
+    "chromosome_name", "seqid"),
+  pos.field = "pos"
+)
 }
 \arguments{
 \item{data}{a data.frame or GPos or GRanges object.}

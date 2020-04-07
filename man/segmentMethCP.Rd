@@ -19,8 +19,6 @@ segmentMethCP(
 \item{region.test}{The meta-analysis method used to create region-based
 test statistics.}
 
-\item{mc.cores}{number of cores used for the parallelization.}
-
 \item{min.width}{the minimum width for the segments, which is used as
 termination rule for the segmentation algorithm.}
 

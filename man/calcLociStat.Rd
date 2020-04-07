@@ -20,8 +20,6 @@ control group.}
 
 \item{test}{a character string containing the names of the test to be
 performed per cytosine.}
-
-\item{mc.cores}{number of cores used for the parallelization.}
 }
 \value{
 a \code{MethCP} object that is not segmented.
