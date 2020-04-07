@@ -6,8 +6,7 @@
 comparisons.}
 \usage{
 calcLociStat(
-    bs.object, group1, group2, test = c("DSS", "methylKit"),
-    mc.cores = 1)
+    bs.object, group1, group2, test = c("DSS", "methylKit"))
 }
 \arguments{
 \item{bs.object}{a \code{BSseq} object from the \code{bsseq} package.}

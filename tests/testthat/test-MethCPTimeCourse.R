@@ -8,7 +8,7 @@ test_that("methylKit", {
     expect_silent(
         obj_ts <- segmentMethCP(
             obj_ts, bs_object_ts,
-            region.test = "stouffer", mc.cores = 1)
+            region.test = "stouffer")
     )
     expect_silent(res_ts <- getSigRegion(obj_ts))
     pos <- unlist(lapply(1:nrow(res_ts), function(x)

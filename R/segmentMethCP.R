@@ -78,7 +78,6 @@
 #'     methcp_obj1, bs_object,
 #'     region.test = "weighted-coverage")
 #'
-#' @import parallel
 #' @importFrom DNAcopy CNA segment
 #' @importFrom bsseq getCoverage
 #' @importFrom BiocParallel bplapply MulticoreParam
