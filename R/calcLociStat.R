@@ -4,8 +4,7 @@
 #'
 #' @usage
 #' calcLociStat(
-#'     bs.object, group1, group2, test = c("DSS", "methylKit"),
-#'     mc.cores = 1)
+#'     bs.object, group1, group2, test = c("DSS", "methylKit"))
 #'
 #' @description
 #' \code{calcLociStat} calculates per-cytosine based statistics

@@ -5,7 +5,7 @@
 \title{Calculate the per-cytosine statistics for time-course data.}
 \usage{
 calcLociStatTimeCourse(
-    bs.object, meta, force.slope = FALSE, mc.cores = 1)
+    bs.object, meta, force.slope = FALSE)
 }
 \arguments{
 \item{bs.object}{a \code{BSseq} object from the \code{bsseq} package.}

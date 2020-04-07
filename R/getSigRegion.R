@@ -56,8 +56,7 @@
 #'     test = "DSS")
 #' methcp_obj1 <- segmentMethCP(
 #'     methcp_obj1, bs_object,
-#'     region.test = "weighted-coverage",
-#'     mc.cores = 1)
+#'     region.test = "weighted-coverage")
 #' methcp_res1 <- getSigRegion(methcp_obj1)
 #'
 #' @export

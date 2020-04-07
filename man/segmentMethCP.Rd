@@ -8,7 +8,7 @@ segmentMethCP(
     methcp.object, bs.object,
     region.test = c(
         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
-    mc.cores = 1, min.width = 2, sig.level = 0.01,
+    min.width = 2, sig.level = 0.01,
     presegment_dist = 600, ...)
 }
 \arguments{
@@ -88,7 +88,6 @@ methcp_obj1 <- calcLociStat(
     test = "DSS")
 methcp_obj1 <- segmentMethCP(
     methcp_obj1, bs_object,
-    region.test = "weighted-coverage",
-    mc.cores = 1)
+    region.test = "weighted-coverage")
 
 }
