@@ -69,7 +69,7 @@
 #' obj_ts <- calcLociStatTimeCourse(bs_object_ts, meta)
 #' obj_ts
 #'
-#' @importFrom BiocParallel bplapply MulticoreParam
+#' @import BiocParallel
 #'
 #' @export
 calcLociStatTimeCourse <- function(

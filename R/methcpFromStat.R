@@ -53,8 +53,6 @@
 #'     pvals.field = "pvals",
 #'     effect.size.field="effect.size"
 #' )
-#' 
-#' @import parallel
 #'
 #' @export
 MethCPFromStat <- function(

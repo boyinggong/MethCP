@@ -80,8 +80,9 @@
 #'
 #' @importFrom DNAcopy CNA segment
 #' @importFrom bsseq getCoverage
-#' @importFrom BiocParallel bplapply MulticoreParam
-#'
+#' @import BiocParallel
+#' 
+#' 
 #' @export
 #' @aliases segmentMethCP
 segmentMethCP <- function(

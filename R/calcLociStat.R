@@ -81,7 +81,7 @@
 #' @importFrom bsseq sampleNames
 #' @importFrom GenomeInfoDb sortSeqlevels
 #' @import GenomicRanges
-#' @importFrom BiocParallel bplapply MulticoreParam
+#' @import BiocParallel
 #' @importFrom utils capture.output
 #'
 #' @export
