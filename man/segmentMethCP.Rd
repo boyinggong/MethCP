@@ -9,7 +9,7 @@ segmentMethCP(
     region.test = c(
         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
     min.width = 2, sig.level = 0.01,
-    presegment_dist = 600, ...)
+    presegment_dist = 600, BPPARAM = bpparam(), ...)
 }
 \arguments{
 \item{methcp.object}{a \code{MethCP} object.}
@@ -27,6 +27,11 @@ termination rule for the segmentation algorithm.}
 
 \item{presegment_dist}{the maximum distance between cytosines for the
 presegmentation.}
+
+\item{BPPARAM}{An optional BiocParallelParam instance determining the 
+parallel back-end to be used during evaluation, or a list of 
+BiocParallelParam instances, to be applied in sequence for nested calls 
+to BiocParallel functions. Default bpparam().}
 
 \item{...}{argument to be passed to segment function in DNAcopy package}
 }
@@ -85,9 +90,9 @@ methcp_obj1 <- calcLociStat(
     bs_object,
     group1 = paste0("treatment", 1:3),
     group2 = paste0("control", 1:3),
-    test = "DSS")
+    test = "methylKit")
 methcp_obj1 <- segmentMethCP(
     methcp_obj1, bs_object,
-    region.test = "weighted-coverage")
+    region.test = "fisher")
 
 }

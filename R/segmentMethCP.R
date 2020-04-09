@@ -6,7 +6,7 @@
 #'     region.test = c(
 #'         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
 #'     min.width = 2, sig.level = 0.01,
-#'     presegment_dist = 600, ...)
+#'     presegment_dist = 600, BPPARAM = bpparam(), ...)
 #'
 #' @description Perform CBS algorithm that segments the genome into
 #' similar levels of sigficance.
@@ -36,6 +36,10 @@
 #' termination rule for the segmentation algorithm.
 #' @param presegment_dist the maximum distance between cytosines for the
 #' presegmentation.
+#' @param BPPARAM An optional BiocParallelParam instance determining the 
+#' parallel back-end to be used during evaluation, or a list of 
+#' BiocParallelParam instances, to be applied in sequence for nested calls 
+#' to BiocParallel functions. Default bpparam().
 #' @param ... argument to be passed to segment function in DNAcopy package
 #'
 #' @return a \code{MethCP} object that is not segmented.
@@ -73,10 +77,10 @@
 #'     bs_object,
 #'     group1 = paste0("treatment", 1:3),
 #'     group2 = paste0("control", 1:3),
-#'     test = "DSS")
+#'     test = "methylKit")
 #' methcp_obj1 <- segmentMethCP(
 #'     methcp_obj1, bs_object,
-#'     region.test = "weighted-coverage")
+#'     region.test = "fisher")
 #'
 #' @importFrom DNAcopy CNA segment
 #' @importFrom bsseq getCoverage
@@ -90,7 +94,7 @@ segmentMethCP <- function(
     region.test = c(
         "fisher", "stouffer", "weighted-variance", "weighted-coverage"),
     min.width = 2, sig.level = 0.01,
-    presegment_dist = 600, ...)
+    presegment_dist = 600, BPPARAM = bpparam(), ...)
 {
     object <- methcp.object
     if (!is(object, "MethCP")){
@@ -152,7 +156,7 @@ segmentMethCP <- function(
                     cp.object, verbose = 1, min.width = min.width,
                     alpha = sig.level, ...)))
                 return(segment.cp.object$output)
-            }, BPPARAM=BiocParallel::MulticoreParam())
+            }, BPPARAM=BPPARAM)
         res <- do.call("rbind", res)
         res$ID <- NULL
         res$seg.mean <- NULL

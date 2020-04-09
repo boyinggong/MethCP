@@ -6,7 +6,8 @@
 comparisons.}
 \usage{
 calcLociStat(
-    bs.object, group1, group2, test = c("DSS", "methylKit"))
+    bs.object, group1, group2, test = c("DSS", "methylKit"),
+    BPPARAM = bpparam())
 }
 \arguments{
 \item{bs.object}{a \code{BSseq} object from the \code{bsseq} package.}
@@ -19,6 +20,11 @@ control group.}
 
 \item{test}{a character string containing the names of the test to be
 performed per cytosine.}
+
+\item{BPPARAM}{An optional BiocParallelParam instance determining the 
+parallel back-end to be used during evaluation, or a list of 
+BiocParallelParam instances, to be applied in sequence for nested calls 
+to BiocParallel functions. Default bpparam().}
 }
 \value{
 a \code{MethCP} object that is not segmented.
@@ -71,11 +77,11 @@ bs_object <- BSseq(gr = GRanges(
     seqnames = "Chr01", IRanges(
         start = (1:nC)*10, width = 1)),
     Cov = sim_cov, M = sim_M, sampleNames = sample_names)
-methcp_obj1 <- calcLociStat(
-    bs_object,
-    group1 = paste0("treatment", 1:3),
-    group2 = paste0("control", 1:3),
-    test = "DSS")
+# methcp_obj1 <- calcLociStat(
+#     bs_object,
+#     group1 = paste0("treatment", 1:3),
+#     group2 = paste0("control", 1:3),
+#     test = "DSS")
 methcp_obj2 <- calcLociStat(
     bs_object,
     group1 = paste0("treatment", 1:3),

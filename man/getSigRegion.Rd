@@ -62,10 +62,10 @@ methcp_obj1 <- calcLociStat(
     bs_object,
     group1 = paste0("treatment", 1:3),
     group2 = paste0("control", 1:3),
-    test = "DSS")
+    test = "methylKit")
 methcp_obj1 <- segmentMethCP(
     methcp_obj1, bs_object,
-    region.test = "weighted-coverage")
+    region.test = "fisher")
 methcp_res1 <- getSigRegion(methcp_obj1)
 
 }

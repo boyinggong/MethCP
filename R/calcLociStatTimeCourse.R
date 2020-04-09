@@ -3,7 +3,8 @@
 #'
 #' @usage
 #' calcLociStatTimeCourse(
-#'     bs.object, meta, force.slope = FALSE)
+#'     bs.object, meta, force.slope = FALSE,
+#'     BPPARAM = bpparam())
 #'
 #' @description
 #' For each cytosine, \code{calcLociStatTimeCourse} fits a linear model
@@ -24,6 +25,10 @@
 #' @param force.slope if \code{TRUE}, we force the slope in the linear
 #' model to be the same between two conditions. Otherwise, the slopes are
 #' fitted separately but not tested.
+#' @param BPPARAM An optional BiocParallelParam instance determining the 
+#' parallel back-end to be used during evaluation, or a list of 
+#' BiocParallelParam instances, to be applied in sequence for nested calls 
+#' to BiocParallel functions. Default bpparam().
 #'
 #' @return A \code{MethCP} object that is not segmented.
 #'
@@ -73,7 +78,8 @@
 #'
 #' @export
 calcLociStatTimeCourse <- function(
-    bs.object, meta, force.slope = FALSE){
+    bs.object, meta, force.slope = FALSE,
+    BPPARAM = bpparam()){
 
     if (!is(bs.object, "BSseq")){
         stop(paste0(
@@ -106,7 +112,7 @@ calcLociStatTimeCourse <- function(
                     weights=cov))$coefficients[4, 3:4]
             }
         })
-    }, BPPARAM=BiocParallel::MulticoreParam())
+    }, BPPARAM=BPPARAM)
     res <- do.call("rbind", res)
     stat <- granges(bs.object)
     stat$stat <- qnorm(1-res[, 2]/2)*sign(res[, 1])

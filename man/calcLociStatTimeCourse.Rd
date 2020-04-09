@@ -5,7 +5,8 @@
 \title{Calculate the per-cytosine statistics for time-course data.}
 \usage{
 calcLociStatTimeCourse(
-    bs.object, meta, force.slope = FALSE)
+    bs.object, meta, force.slope = FALSE,
+    BPPARAM = bpparam())
 }
 \arguments{
 \item{bs.object}{a \code{BSseq} object from the \code{bsseq} package.}
@@ -15,6 +16,11 @@ calcLociStatTimeCourse(
 \item{force.slope}{if \code{TRUE}, we force the slope in the linear
 model to be the same between two conditions. Otherwise, the slopes are
 fitted separately but not tested.}
+
+\item{BPPARAM}{An optional BiocParallelParam instance determining the 
+parallel back-end to be used during evaluation, or a list of 
+BiocParallelParam instances, to be applied in sequence for nested calls 
+to BiocParallel functions. Default bpparam().}
 }
 \value{
 A \code{MethCP} object that is not segmented.

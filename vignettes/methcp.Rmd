@@ -105,13 +105,9 @@ group2 <- paste0("treatment", seq_len(3))
 # Below we calculate the per-cytosine statistics using two different 
 # test `DSS` and `methylKit`. The users may pick one of the two for their
 #  application.
-obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS")
+# obj_DSS <- calcLociStat(bs_object, group1, group2, test = "DSS")
 obj_methylKit <- calcLociStat(
     bs_object, group1, group2, test = "methylKit")
-```
-
-```{r obj_DSS}
-obj_DSS
 ```
 
 ```{r obj_methylKit}
@@ -150,15 +146,11 @@ any constraint on the number of cores used. Please see the documentation for
 adjusting the parameters used in the segmentation.
 
 ```{r segmentation}
-obj_DSS <- segmentMethCP(
-    obj_DSS, bs_object, region.test = "weighted-coverage")
+# obj_DSS <- segmentMethCP(
+#     obj_DSS, bs_object, region.test = "weighted-coverage")
 
 obj_methylKit <- segmentMethCP(
     obj_methylKit, bs_object, region.test = "fisher")
-```
-
-```{r}
-obj_DSS
 ```
 
 ```{r}
@@ -170,8 +162,8 @@ obj_methylKit
 Use function `getSigRegion` on a `MethCP` object to get the list of DMRs.
 
 ```{r}
-region_DSS <- getSigRegion(obj_DSS)
-head(region_DSS)
+# region_DSS <- getSigRegion(obj_DSS)
+# head(region_DSS)
 ```
 
 ```{r}

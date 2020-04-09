@@ -4,7 +4,8 @@
 #'
 #' @usage
 #' calcLociStat(
-#'     bs.object, group1, group2, test = c("DSS", "methylKit"))
+#'     bs.object, group1, group2, test = c("DSS", "methylKit"),
+#'     BPPARAM = bpparam())
 #'
 #' @description
 #' \code{calcLociStat} calculates per-cytosine based statistics
@@ -27,6 +28,10 @@
 #' control group.
 #' @param test a character string containing the names of the test to be
 #' performed per cytosine.
+#' @param BPPARAM An optional BiocParallelParam instance determining the 
+#' parallel back-end to be used during evaluation, or a list of 
+#' BiocParallelParam instances, to be applied in sequence for nested calls 
+#' to BiocParallel functions. Default bpparam().
 #'
 #' @return a \code{MethCP} object that is not segmented.
 #'
@@ -64,11 +69,11 @@
 #'     seqnames = "Chr01", IRanges(
 #'         start = (1:nC)*10, width = 1)),
 #'     Cov = sim_cov, M = sim_M, sampleNames = sample_names)
-#' methcp_obj1 <- calcLociStat(
-#'     bs_object,
-#'     group1 = paste0("treatment", 1:3),
-#'     group2 = paste0("control", 1:3),
-#'     test = "DSS")
+#' # methcp_obj1 <- calcLociStat(
+#' #     bs_object,
+#' #     group1 = paste0("treatment", 1:3),
+#' #     group2 = paste0("control", 1:3),
+#' #     test = "DSS")
 #' methcp_obj2 <- calcLociStat(
 #'     bs_object,
 #'     group1 = paste0("treatment", 1:3),
@@ -87,7 +92,8 @@
 #' @export
 calcLociStat <- function(
     bs.object, group1, group2,
-    test = c("DSS", "methylKit")){
+    test = c("DSS", "methylKit"),
+    BPPARAM = bpparam()){
 
     if (!is(bs.object, "BSseq")){
         stop(paste0(
@@ -108,9 +114,10 @@ calcLociStat <- function(
     }
     if(test == "DSS"){
         stat <- GenomicRanges::GRangesList(
-            BiocParallel::bplapply(object_list, function(o){
+            lapply(object_list, function(o){
             invisible(capture.output(tmp <- DMLtest(
-                o, group1, group2, equal.disp = FALSE, smoothing = FALSE)))
+                o, group1, group2, equal.disp = FALSE, smoothing = FALSE,
+                BPPARAM = bpparam())))
             GRanges(
                 seqnames = tmp$chr,
                 IRanges(start = tmp$pos, end = tmp$pos),
@@ -118,7 +125,7 @@ calcLociStat <- function(
                 se = tmp$diff.se,
                 stat = tmp$stat,
                 pval = tmp$pval)
-        }, BPPARAM=BiocParallel::MulticoreParam()))
+        }))
     } else if(test == "methylKit"){
         nsample <- length(group1) + length(group2)
         stat <- GenomicRanges::GRangesList(
@@ -177,7 +184,7 @@ calcLociStat <- function(
                 gr <- sort(gr)
             }
             return(gr)
-        }, BPPARAM=BiocParallel::MulticoreParam()))
+        }, BPPARAM=BPPARAM))
     }
     methcpObj <- new(
         "MethCP",
